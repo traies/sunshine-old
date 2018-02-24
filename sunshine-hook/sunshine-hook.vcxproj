@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -155,8 +155,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AmdEncoder.h" />
     <ClInclude Include="Bootstrap.h" />
+    <ClInclude Include="D9EncodePipeline.h" />
     <ClInclude Include="D9Hook.h" />
+    <ClInclude Include="EncodePipeline.h" />
+    <ClInclude Include="Encoder.h" />
     <ClInclude Include="Hook.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -168,9 +172,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="AmdEncoder.cpp" />
     <ClCompile Include="Bootstrap.cpp" />
+    <ClCompile Include="D9EncodePipeline.cpp" />
     <ClCompile Include="D9Hook.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Encoder.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

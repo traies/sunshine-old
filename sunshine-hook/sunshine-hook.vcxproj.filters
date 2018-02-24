@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Hooks">
       <UniqueIdentifier>{ada733dc-21f6-462b-ad98-4ccdb748f2bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Encode">
+      <UniqueIdentifier>{1382b964-67ba-4560-a4c2-7ed90b7ccb04}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -31,6 +34,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D9Hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EncodePipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AmdEncoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D9EncodePipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -55,6 +70,15 @@
     </ClCompile>
     <ClCompile Include="D9Hook.cpp">
       <Filter>Source Files\Hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoder.cpp">
+      <Filter>Source Files\Encode</Filter>
+    </ClCompile>
+    <ClCompile Include="AmdEncoder.cpp">
+      <Filter>Source Files\Encode</Filter>
+    </ClCompile>
+    <ClCompile Include="D9EncodePipeline.cpp">
+      <Filter>Source Files\Encode</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

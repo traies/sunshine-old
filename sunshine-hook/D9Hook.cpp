@@ -89,10 +89,21 @@ bool D9Hook::Install()
 	return InstallHook("Direct3DCreate9", endScene, HookEndScene);
 }
 
-HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
+static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 {
 	//	Perform backbuffer capture and encoding.
 	auto hook = D9Hook::GetInstance();
+	auto pipeline = hook->GetEncodePipeline(device);
+
+	//	Get back buffer
+	IDirect3DSwapChain9 * chain;
+	device->GetSwapChain(0, &chain);
+	IDirect3DSurface9 * backbuffer;
+	chain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
+	if (!pipeline->Call(backbuffer)) {
+		LOG(ERROR) << "EncodePipeline failed.";
+		ExitProcess(1);
+	}
 	return hook->GetEndScene()(device);
 }
 
@@ -121,3 +132,10 @@ END_SCENE_FUNC D9Hook::GetEndScene()
 	return endScene;
 }
 
+std::shared_ptr<Encode::D9EncodePipeline> D9Hook::GetEncodePipeline(IDirect3DDevice9 * device)
+{
+	if (encodePipeline == nullptr) {
+		encodePipeline = std::make_shared<Encode::D9EncodePipeline>(device, pipe);
+	}
+	return encodePipeline;
+}

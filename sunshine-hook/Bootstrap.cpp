@@ -14,6 +14,7 @@ Bootstrap::~Bootstrap()
 
 void Bootstrap::Init() {
 	InitLogger();
+	InitOutputPipe();
 	InstallHookD9();
 	//InstallHookD11();
 }
@@ -30,6 +31,7 @@ void Bootstrap::InitLogger() {
 void Bootstrap::InstallHookD9()
 {
 	auto hook = D9Hook::GetInstance();
+	hook->SetPipe(pipe);
 	auto ins = hook->Install();
 	if (!ins) {
 		LOG(ERROR) << "D9Hook installation failed.";
@@ -40,4 +42,28 @@ void Bootstrap::InstallHookD9()
 void Bootstrap::InstallHookD11()
 {
 
+}
+
+void Bootstrap::InitOutputPipe()
+{
+	//	THIS IS WRONG. Pipe should not be created here, and pipe path should be a passed parameter.
+	//	For now, this works in order to check that the AMF encoder works properly.
+	//	The process will block until someone connects on the other side.
+	//	Use the following command:
+	//	ffmpeg.exe -i \\.\pipe\ffpipe -vcodec libx264 -tune zerolatency -f sdl -preset ultrafast -profile:v baseline -crf 17 -pix_fmt yuv420p -f mpegts udp://127.0.0.1:1234
+	pipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\ffpipe"),
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,   // FILE_FLAG_FIRST_PIPE_INSTANCE is not needed but forces CreateNamedPipe(..) to fail if the pipe already exists...
+		1,
+		1024 * 16,
+		1024 * 16,
+		NMPWAIT_USE_DEFAULT_WAIT,
+		NULL);
+	while (pipe != INVALID_HANDLE_VALUE)
+	{
+		if (ConnectNamedPipe(pipe, NULL) != FALSE)   // wait for someone to connect to the pipe
+		{
+			break;
+		}
+	}
 }

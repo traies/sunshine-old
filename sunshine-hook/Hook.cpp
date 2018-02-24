@@ -1,27 +1,7 @@
 #include "stdafx.h"
 #include "Hook.h"
 #include "..\easyloggingpp\easylogging++.h"
-#include <easyhook.h>
 
-bool Hook::InstallHook(std::string name, void * oldfunc, void *newfunc) 
-{
-	ULONG threadIds[] = { 0 };
-	HOOK_TRACE_INFO hookTraceInfo;
-	ZeroMemory(&hookTraceInfo, sizeof(hookTraceInfo));
-	//	Remember to save hookTraceInfo, it is important for release
-	if (LhInstallHook(oldfunc, newfunc, NULL, &hookTraceInfo) != 0) {
-		LOG(ERROR) << "Hook for function " << name << " failed.";
-		return false;
-	}
-
-	if (LhSetExclusiveACL(threadIds, 1, &hookTraceInfo)) {
-		LOG(ERROR) << "Cannot activate hook for function " << name;
-		return false;
-	}
-
-	LOG(INFO) << "Hook " << name << " name.";
-	return true;
-}
 
 //	Useless window procedure, used for Hook installation
 LRESULT CALLBACK TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -33,6 +13,8 @@ LRESULT CALLBACK TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		// Parse the menu selections:
 		switch (wmId)
 		{
+		case 0:				//	this case is important for VS for some reason.
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
