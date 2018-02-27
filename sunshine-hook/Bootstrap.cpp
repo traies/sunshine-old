@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Bootstrap.h"
+#include "D11Hook.h"
 #include "..\easyloggingpp\easylogging++.h"
 
 Bootstrap::Bootstrap()
@@ -16,7 +17,7 @@ void Bootstrap::Init() {
 	InitLogger();
 	InitOutputPipe();
 	InstallHookD9();
-	//InstallHookD11();
+	InstallHookD11();
 }
 
 void Bootstrap::InitLogger() {
@@ -41,7 +42,13 @@ void Bootstrap::InstallHookD9()
 
 void Bootstrap::InstallHookD11()
 {
-
+	auto hook = D11Hook::GetInstance();
+	hook->SetPipe(pipe);
+	auto ins = hook->Install();
+	if (!ins) {
+		LOG(ERROR) << "D11Hook installation failed.";
+		ExitProcess(1);
+	}
 }
 
 void Bootstrap::InitOutputPipe()

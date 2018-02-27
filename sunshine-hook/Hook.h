@@ -6,7 +6,7 @@
 
 LRESULT __stdcall TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-template <typename T, typename K>
+template <typename PipelineType, typename DeviceType>
 class Hook
 {
 public:
@@ -14,7 +14,7 @@ public:
 	~Hook() {};
 	virtual bool Install() = 0;
 	virtual bool Uninstall() = 0;
-	virtual std::shared_ptr<T> GetEncodePipeline(K * device) = 0;
+	virtual std::shared_ptr<PipelineType> GetEncodePipeline(DeviceType * device) = 0;
 	void SetPipe(HANDLE p)
 	{
 		pipe = p;

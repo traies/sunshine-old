@@ -157,6 +157,8 @@
   <ItemGroup>
     <ClInclude Include="AmdEncoder.h" />
     <ClInclude Include="Bootstrap.h" />
+    <ClInclude Include="D11EncodePipeline.h" />
+    <ClInclude Include="D11Hook.h" />
     <ClInclude Include="D9EncodePipeline.h" />
     <ClInclude Include="D9Hook.h" />
     <ClInclude Include="EncodePipeline.h" />
@@ -174,6 +176,8 @@
     </ClCompile>
     <ClCompile Include="AmdEncoder.cpp" />
     <ClCompile Include="Bootstrap.cpp" />
+    <ClCompile Include="D11EncodePipeline.cpp" />
+    <ClCompile Include="D11Hook.cpp" />
     <ClCompile Include="D9EncodePipeline.cpp" />
     <ClCompile Include="D9Hook.cpp" />
     <ClCompile Include="dllmain.cpp" />
