@@ -2,6 +2,9 @@
 #include "Bootstrap.h"
 #include "D11Hook.h"
 #include "..\easyloggingpp\easylogging++.h"
+#include <thread>
+
+#define DEFAULT_FIFO_HEARTBEAT	TEXT("\\\\.\\pipe\\sunshine-heartbeat")
 
 Bootstrap::Bootstrap()
 {
@@ -15,9 +18,16 @@ Bootstrap::~Bootstrap()
 
 void Bootstrap::Init() {
 	InitLogger();
-	InitOutputPipe();
+	ConnectHeartbeatPipe();
+	if (!InitOutputPipe()) {
+		LOG(ERROR) << "InitOutputPipe failed.";
+		return;
+	}
 	InstallHookD9();
 	InstallHookD11();
+	
+	heartbeat.join();
+	return;
 }
 
 void Bootstrap::InitLogger() {
@@ -51,7 +61,7 @@ void Bootstrap::InstallHookD11()
 	}
 }
 
-void Bootstrap::InitOutputPipe()
+bool Bootstrap::InitOutputPipe()
 {
 	//	THIS IS WRONG. Pipe should not be created here, and pipe path should be a passed parameter.
 	//	For now, this works in order to check that the AMF encoder works properly.
@@ -66,11 +76,57 @@ void Bootstrap::InitOutputPipe()
 		1024 * 16,
 		NMPWAIT_USE_DEFAULT_WAIT,
 		NULL);
-	while (pipe != INVALID_HANDLE_VALUE)
+	if (pipe == INVALID_HANDLE_VALUE) {
+		LOG(ERROR) << "Named pipe was invalid.";
+		return false;
+	}
+	int maxTries = 5;
+	int tries = 0;
+	for (;tries < maxTries; tries++)
 	{
 		if (ConnectNamedPipe(pipe, NULL) != FALSE)   // wait for someone to connect to the pipe
 		{
 			break;
 		}
+		else {
+			LOG(INFO) << "Connecting to named pipe failed. Try " << tries << " of " << maxTries;
+		}
 	}
+	if (tries == maxTries) {
+		LOG(ERROR) << "Maximun tries failed.";
+		return false;
+	}
+	return true;
+}
+
+void Bootstrap::ConnectHeartbeatPipe()
+{
+	auto res = CreateFile(DEFAULT_FIFO_HEARTBEAT, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (res == INVALID_HANDLE_VALUE) {
+		LOG(ERROR) << "Heartbeat named pipe could not be connected";
+		return;
+	}
+	LOG(INFO) << "Heartbeat fifo connected.";
+
+	
+	heartbeat = std::thread(&Bootstrap::HeartbeatSend, this, res);
+}
+
+void Bootstrap::HeartbeatSend(HANDLE file)
+{
+	uint8_t buff[1];
+	buff[0] = 1;
+	while (true) {
+		DWORD written;
+		auto res = WriteFile(file, buff, 1, &written, nullptr);
+		if (res && written > 0) {
+			Sleep(1000);
+			continue;
+		}
+		else {
+			break;
+		}
+	}
+	LOG(INFO) << "Heartbeat send ended.";
+	
 }
