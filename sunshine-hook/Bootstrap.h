@@ -10,6 +10,7 @@ private:
 	bool InitOutputPipe();
 	void InstallHookD9();
 	void InstallHookD11();
+	void InstallHookOpenGL();
 	void ConnectHeartbeatPipe();
 	void HeartbeatSend(HANDLE file);
 	std::thread heartbeat;

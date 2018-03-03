@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Bootstrap.h"
 #include "D11Hook.h"
+#include "GLHook.h"
 #include "..\easyloggingpp\easylogging++.h"
 #include <thread>
 
@@ -25,7 +26,7 @@ void Bootstrap::Init() {
 	}
 	InstallHookD9();
 	InstallHookD11();
-	
+	InstallHookOpenGL();
 	heartbeat.join();
 	return;
 }
@@ -57,6 +58,17 @@ void Bootstrap::InstallHookD11()
 	auto ins = hook->Install();
 	if (!ins) {
 		LOG(ERROR) << "D11Hook installation failed.";
+		ExitProcess(1);
+	}
+}
+
+void Bootstrap::InstallHookOpenGL()
+{
+	auto hook = GLHook::GetInstance();
+	hook->SetPipe(pipe);
+	auto ins = hook->Install();
+	if (!ins) {
+		LOG(ERROR) << "GLHook installation failed.";
 		ExitProcess(1);
 	}
 }
