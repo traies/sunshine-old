@@ -102,7 +102,7 @@
       <Filter>Source Files\Hooks</Filter>
     </ClCompile>
     <ClCompile Include="GLEncodePipeline.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Encode</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

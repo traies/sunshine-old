@@ -2,8 +2,9 @@
 #include "AmdEncoder.h"
 #include <include\components\VideoEncoderVCE.h>
 #include "..\easyloggingpp\easylogging++.h"
-
-#pragma comment (lib, "AmfMediaCommon.lib") 
+#include <gl\GL.h>
+#pragma comment (lib, "AmfMediaCommon.lib")
+#pragma comment (lib, "opengl32.lib")
 
 using namespace Encode;
 
@@ -114,6 +115,43 @@ AmdEncoder::AmdEncoder(ID3D11Device * device)
 	LOG(INFO) << "Everything was created fine.";
 }
 
+AmdEncoder::AmdEncoder(HDC * hdc)
+{
+	amf::AMFFactory * factory(nullptr);
+	{
+		auto res = InitContext(&factory);
+		if (res != AMF_OK) {
+			LOG(ERROR) << "InitContext failed.";
+			ExitProcess(1);
+		}
+	}
+	//	Init OpenGL
+	{
+		auto wglContext = wglGetCurrentContext();
+		if (context == nullptr) {
+			LOG(ERROR) << "Failed to get context.";
+			ExitProcess(1);
+		}
+		
+		//	
+		auto res = context->InitOpenGL(wglContext,nullptr,*hdc);
+		if (res != AMF_OK) {
+			LOG(ERROR) << "InitDX11 failed";
+			ExitProcess(1);
+		}
+	}
+
+	//	Create encoder. However, we need width, height and 
+	//	format of the backbuffer before we call encoder->init.
+	{
+		auto res = factory->CreateComponent(context, AMFVideoEncoderVCE_AVC, &encoder);
+		if (res != AMF_OK) {
+			LOG(ERROR) << "CreateComponent failed.";
+			ExitProcess(1);
+		}
+	}
+}
+
 bool AmdEncoder::SetEncoderProperties(UINT width, UINT height, UINT framerate, amf::AMF_SURFACE_FORMAT format)
 {
 	if (encoder == nullptr) {
@@ -183,6 +221,28 @@ bool AmdEncoder::InitEncoder(ID3D11Texture2D * frame)
 	return true;
 }
 
+bool AmdEncoder::InitEncoder(GLuint * texture)
+{
+	int width;
+	int height;
+	int f;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+	//glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &f);
+	int framerate = 60;
+	GL_RGBA;
+	auto format = amf::AMF_SURFACE_RGBA;
+	{
+		auto res = SetEncoderProperties(width, height, framerate, format);
+		if (!res) {
+			LOG(ERROR) << "OpenGL encoder init failed.";
+			return false;
+		}
+	}
+	encoderStarted = true;
+	return true;
+}
+
 bool AmdEncoder::PutFrame(IDirect3DSurface9 * frame)
 {
 	//	Init encoder (but just once).
@@ -242,6 +302,38 @@ bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 		auto res = SendSurfaceToEncoder(surfaceamf);
 		if (!res) {
 			LOG(ERROR) << "DuplicateBuffer failed.";
+			return false;
+		}
+	}
+	return true;
+}
+
+bool AmdEncoder::PutFrame(GLuint * texture)
+{
+	//	Init encoder (but just once).
+	if (!encoderStarted) {
+		auto res = InitEncoder(texture);
+		if (!res) {
+			LOG(ERROR) << "Put frame failed.";
+			ExitProcess(1);
+		}
+	}
+
+	//	Create offscreen surface.
+	amf::AMFSurfacePtr surfaceamf;
+	{
+		auto res = context->CreateSurfaceFromOpenGLNative(amf::AMF_SURFACE_RGBA,(amf_handle) *texture, &surfaceamf, nullptr);
+		if (res != AMF_OK) {
+			LOG(ERROR) << "CreateSurfaceFromOpenGLNative failed.";
+			return false;
+		}
+	}
+
+	//	Submit duplicate backbuffer to encoder.
+	{
+		auto res = encoder->SubmitInput(surfaceamf);
+		if (res != AMF_OK) {
+			LOG(ERROR) << "Encoder SubmitInput failed.";
 			return false;
 		}
 	}

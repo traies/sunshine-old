@@ -11,20 +11,13 @@ D9EncodePipeline::~D9EncodePipeline()
 {
 }
 
-bool D9EncodePipeline::Call(IDirect3DSurface9 * frame)
+void D9EncodePipeline::Encode()
 {
-	//	Submit frame to encoder.
-	if (!encoder->PutFrame(frame)) {
-		LOG(ERROR) << "Frame encoding failed.";
-		return false;
-	}
-
-	//	Request frame from encoder
 	while (true) {
 		amf::AMFData * data;
 		if (!encoder->PullBuffer(&data)) {
 			LOG(ERROR) << "Encoder is closed.";
-			return false;
+			return;
 		}
 		if (data != nullptr) {
 			amf::AMFBufferPtr buffer(data);
@@ -34,8 +27,20 @@ bool D9EncodePipeline::Call(IDirect3DSurface9 * frame)
 				LOG(ERROR) << "Could not write output pipe.";
 				//return false;
 			}
-			break;
+		}
+		else {
+			Sleep(2);
 		}
 	}
+}
+
+bool D9EncodePipeline::Call(IDirect3DSurface9 * frame)
+{
+	//	Submit frame to encoder.
+	if (!encoder->PutFrame(frame)) {
+		LOG(ERROR) << "Frame encoding failed.";
+		return true;
+	}
+
 	return true;
 }
