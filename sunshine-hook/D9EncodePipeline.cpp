@@ -29,7 +29,7 @@ void D9EncodePipeline::Encode()
 			}
 		}
 		else {
-			Sleep(2);
+			Sleep(1);
 		}
 	}
 }

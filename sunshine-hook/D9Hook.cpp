@@ -102,7 +102,7 @@ static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 	chain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
 	if (!pipeline->Call(backbuffer)) {
 		LOG(ERROR) << "EncodePipeline failed.";
-		ExitProcess(1);
+		//ExitProcess(1);
 	}
 	return hook->GetEndScene()(device);
 }

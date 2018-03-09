@@ -286,7 +286,9 @@ bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 			ExitProcess(1);
 		}
 	}
-
+	D3D11_TEXTURE2D_DESC desc;
+	frame->GetDesc(&desc);
+	auto format = desc.Format;
 	//	Create offscreen surface.
 	amf::AMFSurfacePtr surfaceamf;
 	{

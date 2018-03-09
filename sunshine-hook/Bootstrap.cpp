@@ -80,7 +80,7 @@ bool Bootstrap::InitOutputPipe()
 	//	The process will block until someone connects on the other side.
 	//	Use the following command:
 	//	ffmpeg.exe -i \\.\pipe\ffpipe -vcodec libx264 -tune zerolatency -f sdl -preset ultrafast -profile:v baseline -crf 17 -pix_fmt yuv420p -f mpegts udp://127.0.0.1:1234
-	pipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\ffpipe"),
+ 	pipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\ffpipe"),
 		PIPE_ACCESS_DUPLEX,
 		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,   // FILE_FLAG_FIRST_PIPE_INSTANCE is not needed but forces CreateNamedPipe(..) to fail if the pipe already exists...
 		1,

@@ -10,7 +10,6 @@ GLHook::~GLHook()
 {
 }
 
-//	NOTE: IMPORTANT! REMEMBER TO CHANGE ID3D11Device to OpenGL "device" or equivalent (probably context)
 std::shared_ptr<Encode::GLEncodePipeline> GLHook::GetEncodePipeline(HDC * hdc)
 {
 	if (encodePipeline == nullptr) {

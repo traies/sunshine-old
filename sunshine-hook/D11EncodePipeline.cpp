@@ -13,20 +13,13 @@ D11EncodePipeline::~D11EncodePipeline()
 {
 }
 
-bool D11EncodePipeline::Call(ID3D11Texture2D * frame)
+void D11EncodePipeline::Encode()
 {
-	//	Submit frame to encoder.
-	if (!encoder->PutFrame(frame)) {
-		LOG(ERROR) << "Frame encoding failed.";
-		return false;
-	}
-
-	//	Request frame from encoder
 	while (true) {
 		amf::AMFData * data;
 		if (!encoder->PullBuffer(&data)) {
 			LOG(ERROR) << "Encoder is closed.";
-			return false;
+			return;
 		}
 		if (data != nullptr) {
 			amf::AMFBufferPtr buffer(data);
@@ -36,8 +29,19 @@ bool D11EncodePipeline::Call(ID3D11Texture2D * frame)
 				LOG(ERROR) << "Could not write output pipe.";
 				//return false;
 			}
-			break;
 		}
+		else {
+			Sleep(2);
+		}
+	}
+}
+
+bool D11EncodePipeline::Call(ID3D11Texture2D * frame)
+{
+	//	Submit frame to encoder.
+	if (!encoder->PutFrame(frame)) {
+		LOG(ERROR) << "Frame encoding failed.";
+		return false;
 	}
 	return true;
 }

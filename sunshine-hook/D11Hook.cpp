@@ -88,7 +88,7 @@ static HRESULT WINAPI HookPresent(
 	This->GetBuffer(0, __uuidof(backbuffer), (void **)&backbuffer);
 	if (!pipeline->Call(backbuffer)) {
 		LOG(ERROR) << "EncodePipeline failed.";
-		ExitProcess(1);
+	//	ExitProcess(1);
 	}
 	return hook->GetPresent()(This, SyncInterval, Flags);
 }
