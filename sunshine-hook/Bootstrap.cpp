@@ -4,14 +4,8 @@
 #include "GLHook.h"
 #include "..\easyloggingpp\easylogging++.h"
 #include <thread>
-
-#define DEFAULT_FIFO_HEARTBEAT	TEXT("\\\\.\\pipe\\sunshine-heartbeat")
-
-Bootstrap::Bootstrap()
-{
-}
-
-
+#include "MessageQueueDispatcher.h"
+#define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 Bootstrap::~Bootstrap()
 {
 
@@ -19,7 +13,8 @@ Bootstrap::~Bootstrap()
 
 void Bootstrap::Init() {
 	InitLogger();
-	ConnectHeartbeatPipe();
+	heartbeat = std::thread(&Bootstrap::HeartbeatSend, this);
+	
 	if (!InitOutputPipe()) {
 		LOG(ERROR) << "InitOutputPipe failed.";
 		return;
@@ -32,12 +27,18 @@ void Bootstrap::Init() {
 }
 
 void Bootstrap::InitLogger() {
-	//	Set logger configuration. Remember: logger output is to be seen on main process.
+	//	Install MessageQueueDispatcher
+	el::Helpers::installLogDispatchCallback<MessageQueueDispatcher>("MessageQueueDispatcher");
+	MessageQueueDispatcher * mqd = el::Helpers::logDispatchCallback<MessageQueueDispatcher>("MessageQueueDispatcher");
+	mqd->SetMessageQueue(DEFAULT_FIFO_DEBUG);
+
+	
+	// Set logger configuration.Remember: logger output is to be seen on main process.
 	el::Configurations defaultConf;
 	defaultConf.setToDefault();
 	defaultConf.set(el::Level::Global, el::ConfigurationType::Format, "%datetime [%level] [%fbase:%line] %msg");
-	el::Loggers::reconfigureLogger("default", defaultConf);
-	LOG(DEBUG) << "The function was hooked!";
+	el::Loggers::reconfigureLogger("default", defaultConf);	
+	LOG(INFO) << "The function was hooked!";
 }
 
 void Bootstrap::InstallHookD9()
@@ -111,33 +112,11 @@ bool Bootstrap::InitOutputPipe()
 	return true;
 }
 
-void Bootstrap::ConnectHeartbeatPipe()
+void Bootstrap::HeartbeatSend()
 {
-	auto res = CreateFile(DEFAULT_FIFO_HEARTBEAT, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if (res == INVALID_HANDLE_VALUE) {
-		LOG(ERROR) << "Heartbeat named pipe could not be connected";
-		return;
-	}
-	LOG(INFO) << "Heartbeat fifo connected.";
-
-	
-	heartbeat = std::thread(&Bootstrap::HeartbeatSend, this, res);
-}
-
-void Bootstrap::HeartbeatSend(HANDLE file)
-{
-	uint8_t buff[1];
-	buff[0] = 1;
+	uint8_t buff = 1;
 	while (true) {
-		DWORD written;
-		auto res = WriteFile(file, buff, 1, &written, nullptr);
-		if (res && written > 0) {
-			Sleep(1000);
-			continue;
-		}
-		else {
-			break;
-		}
+		mq.send(&buff, sizeof(buff), 0);
 	}
 	LOG(INFO) << "Heartbeat send ended.";
 	

@@ -60,6 +60,9 @@
     <ClInclude Include="GLEncodePipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MessageQueueDispatcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -104,5 +107,11 @@
     <ClCompile Include="GLEncodePipeline.cpp">
       <Filter>Source Files\Encode</Filter>
     </ClCompile>
+    <ClCompile Include="MessageQueueDispatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

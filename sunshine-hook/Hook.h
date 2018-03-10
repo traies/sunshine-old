@@ -3,7 +3,7 @@
 #include "EncodePipeline.h"
 #include <easyhook.h>
 #include "..\easyloggingpp\easylogging++.h"
-
+#include <boost\interprocess\ipc\message_queue.hpp>
 LRESULT __stdcall TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 template <typename PipelineType, typename DeviceType>
@@ -22,6 +22,7 @@ public:
 protected:
 	Hook() {};
 	HANDLE pipe;
+	std::shared_ptr<boost::interprocess::message_queue> outputMq;
 	bool InstallHook(std::string name, void * oldfunc, void *newfunc)
 	{
 		ULONG threadIds[] = { 0 };
