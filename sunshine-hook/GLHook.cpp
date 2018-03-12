@@ -6,14 +6,10 @@ GLHook::GLHook()
 {
 }
 
-GLHook::~GLHook()
-{
-}
-
 std::shared_ptr<Encode::GLEncodePipeline> GLHook::GetEncodePipeline(HDC * hdc)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::GLEncodePipeline>(hdc, pipe);
+		encodePipeline = std::make_shared<Encode::GLEncodePipeline>(hdc, pipe, socket);
 	}
 	return encodePipeline;
 

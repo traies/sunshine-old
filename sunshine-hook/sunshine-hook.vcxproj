@@ -113,6 +113,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;SUNSHINEHOOK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -129,6 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;SUNSHINEHOOK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,18 +161,21 @@
   <ItemGroup>
     <ClInclude Include="AmdEncoder.h" />
     <ClInclude Include="Bootstrap.h" />
+    <ClInclude Include="Context.h" />
     <ClInclude Include="D11EncodePipeline.h" />
     <ClInclude Include="D11Hook.h" />
     <ClInclude Include="D9EncodePipeline.h" />
     <ClInclude Include="D9Hook.h" />
     <ClInclude Include="EncodePipeline.h" />
     <ClInclude Include="Encoder.h" />
+    <ClInclude Include="ExitProcessHook.h" />
     <ClInclude Include="GLEncodePipeline.h" />
     <ClInclude Include="GLHook.h" />
     <ClInclude Include="Hook.h" />
     <ClInclude Include="MessageQueueDispatcher.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="UDPClient.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\easyloggingpp\easylogging++.cc">
@@ -181,12 +186,15 @@
     </ClCompile>
     <ClCompile Include="AmdEncoder.cpp" />
     <ClCompile Include="Bootstrap.cpp" />
+    <ClCompile Include="Context.cpp" />
     <ClCompile Include="D11EncodePipeline.cpp" />
     <ClCompile Include="D11Hook.cpp" />
     <ClCompile Include="D9EncodePipeline.cpp" />
     <ClCompile Include="D9Hook.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EncodePipeline.cpp" />
     <ClCompile Include="Encoder.cpp" />
+    <ClCompile Include="ExitProcessHook.cpp" />
     <ClCompile Include="GLEncodePipeline.cpp" />
     <ClCompile Include="GLHook.cpp" />
     <ClCompile Include="Hook.cpp" />
@@ -203,6 +211,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="sunshine-hook.cpp" />
+    <ClCompile Include="UDPClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -211,6 +220,8 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\boost.1.66.0.0\build\native\boost.targets" Condition="Exists('..\packages\boost.1.66.0.0\build\native\boost.targets')" />
     <Import Project="..\packages\boost_date_time-vc141.1.66.0.0\build\native\boost_date_time-vc141.targets" Condition="Exists('..\packages\boost_date_time-vc141.1.66.0.0\build\native\boost_date_time-vc141.targets')" />
+    <Import Project="..\packages\boost_system-vc141.1.66.0.0\build\native\boost_system-vc141.targets" Condition="Exists('..\packages\boost_system-vc141.1.66.0.0\build\native\boost_system-vc141.targets')" />
+    <Import Project="..\packages\boost_regex-vc141.1.66.0.0\build\native\boost_regex-vc141.targets" Condition="Exists('..\packages\boost_regex-vc141.1.66.0.0\build\native\boost_regex-vc141.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -218,5 +229,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\boost.1.66.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.66.0.0\build\native\boost.targets'))" />
     <Error Condition="!Exists('..\packages\boost_date_time-vc141.1.66.0.0\build\native\boost_date_time-vc141.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_date_time-vc141.1.66.0.0\build\native\boost_date_time-vc141.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_system-vc141.1.66.0.0\build\native\boost_system-vc141.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc141.1.66.0.0\build\native\boost_system-vc141.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_regex-vc141.1.66.0.0\build\native\boost_regex-vc141.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_regex-vc141.1.66.0.0\build\native\boost_regex-vc141.targets'))" />
   </Target>
 </Project>

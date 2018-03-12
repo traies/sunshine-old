@@ -31,7 +31,6 @@ class D11Hook : public Hook<Encode::D11EncodePipeline, ID3D11Device>
 {
 public:
 	D11Hook();
-	~D11Hook();
 	std::shared_ptr<Encode::D11EncodePipeline> GetEncodePipeline(ID3D11Device * device) override;
 	static std::shared_ptr<D11Hook> GetInstance();
 	PRESENT_SWAP_FUNC GetPresent();

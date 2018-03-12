@@ -120,14 +120,11 @@ std::shared_ptr<D11Hook> D11Hook::GetInstance()
 std::shared_ptr<Encode::D11EncodePipeline> D11Hook::GetEncodePipeline(ID3D11Device * device)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::D11EncodePipeline>(device, pipe);
+		encodePipeline = std::make_shared<Encode::D11EncodePipeline>(device, pipe, socket);
 	}
 	return encodePipeline;
 }
 
-D11Hook::~D11Hook()
-{
-}
 
 bool D11Hook::Uninstall()
 {

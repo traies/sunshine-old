@@ -5,24 +5,30 @@
 #include "..\easyloggingpp\easylogging++.h"
 #include <thread>
 #include "MessageQueueDispatcher.h"
+
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 Bootstrap::~Bootstrap()
 {
 
 }
 
+auto Bootstrap::InitSocket()
+{
+	return std::make_shared<UDPClient>("127.0.0.1", 1234);
+}
+
 void Bootstrap::Init() {
 	InitLogger();
-	heartbeat = std::thread(&Bootstrap::HeartbeatSend, this);
+	heartbeat = std::make_shared<std::thread>(std::thread(&Bootstrap::HeartbeatSend, this, mq));
 	
-	if (!InitOutputPipe()) {
+	socket = InitSocket();
+	/*if (!InitOutputPipe()) {
 		LOG(ERROR) << "InitOutputPipe failed.";
 		return;
-	}
+	}*/
 	InstallHookD9();
 	InstallHookD11();
 	InstallHookOpenGL();
-	heartbeat.join();
 	return;
 }
 
@@ -45,6 +51,8 @@ void Bootstrap::InstallHookD9()
 {
 	auto hook = D9Hook::GetInstance();
 	hook->SetPipe(pipe);
+	hook->SetSocket(socket);
+	hook->SetBootstrap(heartbeat);
 	auto ins = hook->Install();
 	if (!ins) {
 		LOG(ERROR) << "D9Hook installation failed.";
@@ -56,6 +64,8 @@ void Bootstrap::InstallHookD11()
 {
 	auto hook = D11Hook::GetInstance();
 	hook->SetPipe(pipe);
+	hook->SetSocket(socket);
+	hook->SetBootstrap(heartbeat);
 	auto ins = hook->Install();
 	if (!ins) {
 		LOG(ERROR) << "D11Hook installation failed.";
@@ -67,12 +77,16 @@ void Bootstrap::InstallHookOpenGL()
 {
 	auto hook = GLHook::GetInstance();
 	hook->SetPipe(pipe);
+	hook->SetSocket(socket);
+	hook->SetBootstrap(heartbeat);
 	auto ins = hook->Install();
 	if (!ins) {
 		LOG(ERROR) << "GLHook installation failed.";
 		ExitProcess(1);
 	}
 }
+
+
 
 bool Bootstrap::InitOutputPipe()
 {
@@ -112,11 +126,11 @@ bool Bootstrap::InitOutputPipe()
 	return true;
 }
 
-void Bootstrap::HeartbeatSend()
+void Bootstrap::HeartbeatSend(std::shared_ptr<boost::interprocess::message_queue> mq)
 {
-	uint8_t buff = 1;
 	while (true) {
-		mq.send(&buff, sizeof(buff), 0);
+		uint8_t buff = 1;
+		mq->send(&buff, sizeof(buff), 0);
 	}
 	LOG(INFO) << "Heartbeat send ended.";
 	

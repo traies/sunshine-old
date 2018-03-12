@@ -13,7 +13,6 @@ class D9Hook :
 {
 public:
 	D9Hook() {};
-	~D9Hook() {};
 	bool Install();
 	bool Uninstall();
 	END_SCENE_FUNC GetEndScene();

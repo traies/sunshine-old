@@ -1,9 +1,12 @@
 #pragma once 
 #include <string>
+#include <boost\asio.hpp>
 #include "EncodePipeline.h"
 #include <easyhook.h>
 #include "..\easyloggingpp\easylogging++.h"
 #include <boost\interprocess\ipc\message_queue.hpp>
+#include "UDPClient.h"
+
 LRESULT __stdcall TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 template <typename PipelineType, typename DeviceType>
@@ -19,9 +22,18 @@ public:
 	{
 		pipe = p;
 	}
+	void SetSocket(std::shared_ptr<UDPClient> s) 
+	{
+		socket = s;
+	}
+	void SetBootstrap(std::shared_ptr<std::thread> b)
+	{
+		bootstrap = b;
+	}
 protected:
 	Hook() {};
 	HANDLE pipe;
+	std::shared_ptr<UDPClient> socket;
 	std::shared_ptr<boost::interprocess::message_queue> outputMq;
 	bool InstallHook(std::string name, void * oldfunc, void *newfunc)
 	{
@@ -42,5 +54,7 @@ protected:
 		LOG(INFO) << "Hook " << name << " name.";
 		return true;
 	}
+private:
+	std::shared_ptr<std::thread> bootstrap;
 };
 

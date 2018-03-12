@@ -135,7 +135,7 @@ END_SCENE_FUNC D9Hook::GetEndScene()
 std::shared_ptr<Encode::D9EncodePipeline> D9Hook::GetEncodePipeline(IDirect3DDevice9 * device)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::D9EncodePipeline>(device, pipe);
+		encodePipeline = std::make_shared<Encode::D9EncodePipeline>(device, pipe, socket);
 	}
 	return encodePipeline;
 }

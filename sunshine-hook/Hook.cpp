@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "Hook.h"
 #include "..\easyloggingpp\easylogging++.h"
-
+#define WIN32_LEAN_AND_MEAN
+#include <boost\asio.hpp>
 
 //	Useless window procedure, used for Hook installation
 LRESULT CALLBACK TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {

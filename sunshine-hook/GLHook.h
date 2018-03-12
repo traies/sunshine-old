@@ -21,7 +21,6 @@ class GLHook: public Hook<Encode::GLEncodePipeline, HDC >
 {
 public:
 	GLHook();
-	~GLHook();
 	std::shared_ptr<Encode::GLEncodePipeline> GetEncodePipeline(HDC * device) override;
 	static std::shared_ptr<GLHook> GetInstance();
 	bool Install();
