@@ -307,6 +307,7 @@ bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 			return false;
 		}
 	}
+	surfaceamf.Release();
 	return true;
 }
 
@@ -339,6 +340,7 @@ bool AmdEncoder::PutFrame(GLuint * texture)
 			return false;
 		}
 	}
+	surfaceamf.Release();
 	return true;
 }
 

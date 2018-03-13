@@ -29,7 +29,7 @@ namespace Encode {
 		void Encode()
 		{
 			while (true) {
-				amf::AMFData * data;
+				amf::AMFDataPtr data;
 				if (!encoder->PullBuffer(&data)) {
 					LOG(ERROR) << "Encoder is closed.";
 					return;
@@ -37,11 +37,6 @@ namespace Encode {
 				if (data != nullptr) {
 					amf::AMFBufferPtr buffer(data);
 					DWORD dwWritten;
-					//auto res = WriteFile(pipe, buffer->GetNative(), buffer->GetSize(), &dwWritten, NULL);
-					//if (!res) {
-					//	LOG(ERROR) << "Could not write output pipe.";
-					//	//return false;
-					//}
 					socket->send(buffer->GetNative(), buffer->GetSize());
 				}
 				else {
