@@ -29,7 +29,7 @@ int RendererWindow::Render()
 
 		mpv->Render(w, h, paramFlip);
 		glfwSwapBuffers(window);
-		glfwPollEvents();
+		glfwWaitEvents();
 	}
 	return code;
 }

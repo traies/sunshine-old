@@ -7,6 +7,11 @@ void * MpvWrapper::GetProcAddressMpv(void * fn_ctx, const char * name)
 	return glfwGetProcAddress(name);
 }
 
+void MpvWrapper::RedrawCallback(void * ctx)
+{
+	glfwPostEmptyEvent();
+}
+
 bool MpvWrapper::SetProperty(const char * name, const char * property)
 {
 	return mpv_set_property(mpv, name, MPV_FORMAT_STRING, (void *) &property) == 0;
@@ -58,6 +63,9 @@ bool MpvWrapper::InitOpenGL()
 	if (mpv_render_context_create(&renderContext, mpv, params) < 0) {
 		throw std::runtime_error("failed to initialize mpv GL context");
 	}
+
+	//	Set update render callback
+	mpv_render_context_set_update_callback(renderContext, &MpvWrapper::RedrawCallback, NULL);
 }
 
 bool MpvWrapper::Render(int width, int height, int flip)

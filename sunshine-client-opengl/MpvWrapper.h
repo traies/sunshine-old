@@ -11,6 +11,7 @@ private:
 	mpv_handle * mpv;
 	mpv_render_context * renderContext;
 	static void * GetProcAddressMpv(void * fn_ctx, const char * name);
+	static void RedrawCallback(void * ctx);
 public:
 	MpvWrapper() 
 	{

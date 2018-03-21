@@ -44,7 +44,8 @@ public:
 
 		//	Set low-latency options
 		mpv->SetProperty("profile", "low-latency");
-		mpv->SetProperty("hwdec", "d3d11va");
+		mpv->SetProperty("vo", "libmpv");
+		mpv->SetProperty("hwdec", "no");
 		mpv->SetProperty("d3d11-sync-interval", 0);
 		mpv->SetProperty("untimed");
 		mpv->SetProperty("no-cache");
