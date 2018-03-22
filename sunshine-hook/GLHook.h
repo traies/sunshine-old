@@ -1,5 +1,5 @@
 #pragma once
-#include "Hook.h"
+#include "GraphicHook.h"
 #include "GLEncodePipeline.h"
 
 typedef BOOL(WINAPI * SWAP_BUFFERS_FUNC)(
@@ -17,7 +17,7 @@ static BOOL WINAPI HookSwapLayerBuffers(
 	HDC hdc,
 	UINT fuPlanes);
 
-class GLHook: public Hook<Encode::GLEncodePipeline, HDC >
+class GLHook: public GraphicHook<Encode::GLEncodePipeline, HDC >
 {
 public:
 	GLHook();

@@ -171,6 +171,7 @@
     <ClInclude Include="ExitProcessHook.h" />
     <ClInclude Include="GLEncodePipeline.h" />
     <ClInclude Include="GLHook.h" />
+    <ClInclude Include="GraphicHook.h" />
     <ClInclude Include="Hook.h" />
     <ClInclude Include="MessageQueueDispatcher.h" />
     <ClInclude Include="stdafx.h" />
@@ -197,6 +198,7 @@
     <ClCompile Include="ExitProcessHook.cpp" />
     <ClCompile Include="GLEncodePipeline.cpp" />
     <ClCompile Include="GLHook.cpp" />
+    <ClCompile Include="GraphicHook.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="MessageQueueDispatcher.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

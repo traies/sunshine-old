@@ -1,5 +1,5 @@
 #pragma once
-#include "Hook.h"
+#include "GraphicHook.h"
 #include "D11EncodePipeline.h"
 
 typedef HRESULT(STDMETHODCALLTYPE * CREATE_DEVICE_AND_SWAP_TYPE)(
@@ -27,7 +27,7 @@ static HRESULT WINAPI HookPresent(
 	UINT SyncInterval,
 	UINT Flags);
 
-class D11Hook : public Hook<Encode::D11EncodePipeline, ID3D11Device>
+class D11Hook : public GraphicHook<Encode::D11EncodePipeline, ID3D11Device>
 {
 public:
 	D11Hook();

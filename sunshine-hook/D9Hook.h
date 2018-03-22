@@ -1,5 +1,5 @@
 #pragma once
-#include "Hook.h"
+#include "GraphicHook.h"
 #include <d3d9.h>
 #include <memory>
 #include "D9EncodePipeline.h"
@@ -9,7 +9,7 @@ typedef HRESULT(WINAPI* END_SCENE_FUNC)(LPDIRECT3DDEVICE9 device);
 HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device);
 
 class D9Hook :
-	public Hook<Encode::D9EncodePipeline, IDirect3DDevice9>
+	public GraphicHook<Encode::D9EncodePipeline, IDirect3DDevice9>
 {
 public:
 	D9Hook() {};

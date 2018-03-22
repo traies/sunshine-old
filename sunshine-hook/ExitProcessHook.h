@@ -1,6 +1,6 @@
 #pragma once
 #include "Hook.h"
-class ExitProcessHook: public Hook<void, void>
+class ExitProcessHook: public Hook
 {
 public:
 	ExitProcessHook();

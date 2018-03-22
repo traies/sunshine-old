@@ -9,23 +9,20 @@
 
 LRESULT __stdcall TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-template <typename PipelineType, typename DeviceType>
+
 class Hook
 {
 public:
 	
-	~Hook() {};
+	virtual ~Hook() {};
 	virtual bool Install() = 0;
 	virtual bool Uninstall() = 0;
-	virtual std::shared_ptr<PipelineType> GetEncodePipeline(DeviceType * device) = 0;
+	
 	void SetPipe(HANDLE p)
 	{
 		pipe = p;
 	}
-	void SetSocket(std::shared_ptr<UDPClient> s) 
-	{
-		socket = s;
-	}
+	
 	void SetBootstrap(std::shared_ptr<std::thread> b)
 	{
 		bootstrap = b;
@@ -33,7 +30,7 @@ public:
 protected:
 	Hook() {};
 	HANDLE pipe;
-	std::shared_ptr<UDPClient> socket;
+	
 	std::shared_ptr<boost::interprocess::message_queue> outputMq;
 	bool InstallHook(std::string name, void * oldfunc, void *newfunc)
 	{
