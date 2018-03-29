@@ -27,6 +27,9 @@
     <ClInclude Include="MpvWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UDPClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MpvWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UDPClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
