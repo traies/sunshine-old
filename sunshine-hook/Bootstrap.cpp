@@ -5,6 +5,7 @@
 #include "..\easyloggingpp\easylogging++.h"
 #include <thread>
 #include "MessageQueueDispatcher.h"
+#include "InputPipeline.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 Bootstrap::~Bootstrap()
@@ -29,6 +30,7 @@ void Bootstrap::Init() {
 	InstallHookD9();
 	InstallHookD11();
 	InstallHookOpenGL();
+	InitInputPipeline();
 	return;
 }
 
@@ -86,7 +88,11 @@ void Bootstrap::InstallHookOpenGL()
 	}
 }
 
-
+std::unique_ptr<InputPipeline> Bootstrap::inputPipeline;
+void Bootstrap::InitInputPipeline()
+{
+	inputPipeline = std::make_unique<InputPipeline>();
+}
 
 bool Bootstrap::InitOutputPipe()
 {

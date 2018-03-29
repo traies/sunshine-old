@@ -7,7 +7,6 @@ UDPClient::UDPClient(const std::string& host, const unsigned int port)
 	work = std::make_unique<boost::asio::io_service::work>(*io_service);
 	socket = std::make_unique<udp::socket>(*io_service, udp::endpoint(udp::v4(), 0));
 	destination = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(host), port);
-
 	io_service_thread = std::thread(boost::bind(&boost::asio::io_service::run, boost::ref(*io_service)));
 	io_service_thread.detach();
 }
