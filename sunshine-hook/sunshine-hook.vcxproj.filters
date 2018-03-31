@@ -22,6 +22,9 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{46de1f6a-dc59-454b-b87d-a10fcacc3949}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Hook">
+      <UniqueIdentifier>{9a3cba34-49db-48f2-ac08-934c7867ad2b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -31,12 +34,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Bootstrap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Hook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D9Hook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EncodePipeline.h">
@@ -51,13 +48,7 @@
     <ClInclude Include="D9EncodePipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D11Hook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="D11EncodePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GLHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLEncodePipeline.h">
@@ -75,14 +66,26 @@
     <ClInclude Include="ExitProcessHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InputPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UDPServer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D9Hook.h">
+      <Filter>Header Files\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="D11Hook.h">
+      <Filter>Header Files\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="GLHook.h">
+      <Filter>Header Files\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="Hook.h">
+      <Filter>Header Files\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicHook.h">
+      <Filter>Header Files\Hook</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -143,14 +146,14 @@
     <ClCompile Include="ExitProcessHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicHook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InputPipeline.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
     <ClCompile Include="UDPServer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicHook.cpp">
+      <Filter>Source Files\Hooks</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

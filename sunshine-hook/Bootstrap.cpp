@@ -6,6 +6,7 @@
 #include <thread>
 #include "MessageQueueDispatcher.h"
 #include "InputPipeline.h"
+#include "AmdEncoder.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 Bootstrap::~Bootstrap()
@@ -51,7 +52,7 @@ void Bootstrap::InitLogger() {
 
 void Bootstrap::InstallHookD9()
 {
-	auto hook = D9Hook::GetInstance();
+	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
 	hook->SetPipe(pipe);
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
@@ -64,7 +65,7 @@ void Bootstrap::InstallHookD9()
 
 void Bootstrap::InstallHookD11()
 {
-	auto hook = D11Hook::GetInstance();
+	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
 	hook->SetPipe(pipe);
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
@@ -77,7 +78,7 @@ void Bootstrap::InstallHookD11()
 
 void Bootstrap::InstallHookOpenGL()
 {
-	auto hook = GLHook::GetInstance();
+	auto hook = GLHook<Encode::AmdEncoder>::GetInstance();
 	hook->SetPipe(pipe);
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);

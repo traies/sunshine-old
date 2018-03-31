@@ -1,64 +1,19 @@
 #include "stdafx.h"
 #include "GLHook.h"
+#include "AmdEncoder.h"
 
-
-GLHook::GLHook()
-{
-}
-
-std::shared_ptr<Encode::GLEncodePipeline> GLHook::GetEncodePipeline(HDC * hdc)
+template <typename EncType>
+std::shared_ptr<Encode::GLEncodePipeline<EncType>> GLHook<EncType>::GetEncodePipeline(HDC * hdc)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::GLEncodePipeline>(hdc, pipe, socket);
+		encodePipeline = std::make_shared<Encode::GLEncodePipeline<EncType>>(hdc, this->pipe, this->socket);
 	}
 	return encodePipeline;
 
 }
 
-std::shared_ptr<GLHook> GLHook::instance;
-
-std::shared_ptr<GLHook> GLHook::GetInstance()
-{
-	if (instance == nullptr) {
-		instance = std::make_shared<GLHook>();
-	}
-	return instance;
-}
-
-bool GLHook::Install()
-{
-	auto hMod = GetModuleHandle(TEXT("Gdi32.dll"));
-	if (hMod == nullptr) {
-		hMod = LoadLibrary(TEXT("Gdi32.dll"));
-		if (hMod == nullptr) {
-			LOG(ERROR) << "Load Gdi32.dll module failed.";
-			return false;
-		}
-	}
-	
-	swapBuffers = (SWAP_BUFFERS_FUNC) GetProcAddress(hMod, "SwapBuffers");
-	if (swapBuffers == nullptr) {
-		LOG(ERROR) << "GetProcAddress for SwapBuffers failed";
-		return false;
-	}
-	InstallHook("SwapBuffers", swapBuffers, HookSwapBuffers);
-	return true;
-}
-
-static BOOL WINAPI HookSwapBuffers(HDC hdc)
-{
-	//	Perform backbuffer capture and encoding.
-	auto hook = GLHook::GetInstance();
-	
-	auto encodePipeline = hook->GetEncodePipeline(&hdc);
-
-	auto res =  encodePipeline->Call(&hdc);
-	LOG(INFO) << "Swapping buffers.";
-	return hook->GetSwapBuffers()(hdc);
-}
-
-
-SWAP_BUFFERS_FUNC GLHook::GetSwapBuffers()
+template <typename EncType>
+SWAP_BUFFERS_FUNC GLHook<EncType>::GetSwapBuffers()
 {
 	if (swapBuffers == nullptr) {
 		// Should probably throw an exception.
@@ -68,7 +23,22 @@ SWAP_BUFFERS_FUNC GLHook::GetSwapBuffers()
 	return swapBuffers;
 }
 
-bool GLHook::Uninstall()
+template <typename EncType>
+bool GLHook<EncType>::Uninstall()
 {
 	return false;
 }
+
+template <typename EncType>
+std::shared_ptr<GLHook<EncType>> GLHook<EncType>::instance;
+
+template <typename EncType>
+std::shared_ptr<GLHook<EncType>> GLHook<EncType>::GetInstance()
+{
+	if (instance == nullptr) {
+		instance = std::make_shared<GLHook<EncType>>();
+	}
+	return instance;
+};
+
+template class GLHook<Encode::AmdEncoder>;

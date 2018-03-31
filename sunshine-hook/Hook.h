@@ -27,11 +27,7 @@ public:
 	{
 		bootstrap = b;
 	}
-protected:
-	Hook() {};
-	HANDLE pipe;
-	
-	std::shared_ptr<boost::interprocess::message_queue> outputMq;
+
 	bool InstallHook(std::string name, void * oldfunc, void *newfunc)
 	{
 		ULONG threadIds[] = { 0 };
@@ -51,6 +47,11 @@ protected:
 		LOG(INFO) << "Hook " << name << " name.";
 		return true;
 	}
+protected:
+	Hook() {};
+	HANDLE pipe;
+	std::shared_ptr<boost::interprocess::message_queue> outputMq;
+	
 private:
 	std::shared_ptr<std::thread> bootstrap;
 };

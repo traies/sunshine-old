@@ -367,7 +367,7 @@ bool AmdEncoder::SendSurfaceToEncoder(amf::AMFSurfacePtr surface)
 	return true;
 }
 
-bool AmdEncoder::PullBuffer(amf::AMFData ** data)
+bool AmdEncoder::PullBuffer(uint8_t ** data, uint64_t * size)
 {
 	amf::AMFData * d;
 	auto res = encoder->QueryOutput(&d);
@@ -376,7 +376,9 @@ bool AmdEncoder::PullBuffer(amf::AMFData ** data)
 		LOG(INFO) << "AMF_EOF: encoder was closed?";
 		return false;
 	} 
-	*data = d;
+	amf::AMFBufferPtr buffer(d);
+	*data = static_cast<uint8_t *>(buffer->GetNative());
+	*size = static_cast<uint64_t>(buffer->GetSize());
 	return true;
 }
 AmdEncoder::~AmdEncoder()

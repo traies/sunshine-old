@@ -5,8 +5,7 @@
 #include <include\core\Factory.h>
 
 namespace Encode {
-	class AmdEncoder : public Encoder<amf::AMFData>
-	{
+	class AmdEncoder : public Encoder {
 	public:
 		AmdEncoder(IDirect3DDevice9 * device);
 		AmdEncoder(ID3D11Device * device);
@@ -15,7 +14,7 @@ namespace Encode {
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;
 		bool PutFrame(GLuint * texture) override;
-		bool PullBuffer(amf::AMFData ** buffer) override;
+		bool PullBuffer(uint8_t ** buffer, uint64_t * size) override;
 	private:
 		AmdEncoder() {};
 		amf::AMFContextPtr context;

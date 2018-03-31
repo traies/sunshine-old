@@ -6,14 +6,3 @@
 #pragma comment (lib, "AmfMediaCommon.lib")
 
 using namespace Encode;
-
-bool D9EncodePipeline::Call(IDirect3DSurface9 * frame)
-{
-	//	Submit frame to encoder.
-	if (!encoder->PutFrame(frame)) {
-		LOG(ERROR) << "Frame encoding failed.";
-		return true;
-	}
-
-	return true;
-}

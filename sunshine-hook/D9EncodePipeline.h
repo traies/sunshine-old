@@ -1,24 +1,29 @@
 #pragma once
 #include "EncodePipeline.h"
-#include "AmdEncoder.h"
 #include <d3d9.h>
 #include <thread>
 #include <boost\asio.hpp>
 #include "UDPClient.h"
 
 namespace Encode {
-	class D9EncodePipeline : public EncodePipeline<IDirect3DSurface9>
+	template <typename EncType>
+	class D9EncodePipeline  : public EncodePipeline<IDirect3DSurface9, EncType>
 	{
-	private:
-		D9EncodePipeline();
-		
-		
 	public:
 		D9EncodePipeline(IDirect3DDevice9 * device, HANDLE pipe, std::shared_ptr<UDPClient> socket) 
-			: EncodePipeline(std::make_unique<AmdEncoder>(device), pipe, socket)
+			: EncodePipeline<IDirect3DSurface9, EncType>(std::make_unique<EncType>(device), pipe, socket)
 		{
 		};
-		bool Call(IDirect3DSurface9 * frame) override;
+		bool Call(IDirect3DSurface9 * frame) override
+		{
+			//	Submit frame to encoder.
+			if (!this->encoder->PutFrame(frame)) {
+				LOG(ERROR) << "Frame encoding failed.";
+				return true;
+			}
+
+			return true;
+		}
 	};
 }
 
