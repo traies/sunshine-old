@@ -29,14 +29,14 @@ namespace Encode {
 		void Encode()
 		{
 			while (true) {
-				uint8_t * data;
-				uint64_t size;
-				if (!encoder->PullBuffer(&data, &size)) {
-					LOG(ERROR) << "Encoder is closed.";
-					return;
+				std::unique_ptr<std::vector<std::vector<uint8_t>>> buffer = encoder->PullBuffer();
+				if (buffer == nullptr) {
+					/*LOG(ERROR) << "Encoder returned nothing";*/
 				}
-				if (data != nullptr) {
-					socket->send(data, size);
+				if (buffer != nullptr) {
+					for (std::vector<uint8_t> b : *buffer) {
+						socket->send(b.data(), b.size());
+					}
 				}
 				else {
 					Sleep(2);

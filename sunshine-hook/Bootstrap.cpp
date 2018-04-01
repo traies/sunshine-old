@@ -7,8 +7,12 @@
 #include "MessageQueueDispatcher.h"
 #include "InputPipeline.h"
 #include "AmdEncoder.h"
+#include "NvidiaEncoder.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
+
+#define NVIDIA_ENC
+
 Bootstrap::~Bootstrap()
 {
 
@@ -29,9 +33,9 @@ void Bootstrap::Init() {
 		return;
 	}*/
 	InstallHookD9();
-	InstallHookD11();
-	InstallHookOpenGL();
-	InitInputPipeline();
+	/*InstallHookD11();
+	InstallHookOpenGL();*/
+	//InitInputPipeline();
 	return;
 }
 
@@ -52,7 +56,14 @@ void Bootstrap::InitLogger() {
 
 void Bootstrap::InstallHookD9()
 {
-	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
+#ifdef NVIDIA_ENC
+	auto hook = D9Hook<Encode::NvidiaEncoder>::GetInstance();
+#endif // NVIDIA_ENC
+
+#ifndef NVIDIA_ENC
+	//auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
+#endif
+	
 	hook->SetPipe(pipe);
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);

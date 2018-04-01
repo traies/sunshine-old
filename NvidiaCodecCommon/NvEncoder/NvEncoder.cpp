@@ -148,7 +148,7 @@ void NvEncoder::CreateDefaultEncoderParams(NV_ENC_INITIALIZE_PARAMS* pIntializeP
     pIntializeParams->encodeHeight = m_nHeight;
     pIntializeParams->darWidth = m_nWidth;
     pIntializeParams->darHeight = m_nHeight;
-    pIntializeParams->frameRateNum = 30;
+    pIntializeParams->frameRateNum = 60;
     pIntializeParams->frameRateDen = 1;
     pIntializeParams->enablePTD = 1;
     pIntializeParams->reportSliceOffsets = 0;

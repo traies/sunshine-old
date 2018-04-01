@@ -107,10 +107,9 @@ public:
 		return endScene;
 	};
 	std::shared_ptr<Encode::D9EncodePipeline<EncType>> GetEncodePipeline(IDirect3DDevice9 * device) override;
-	static std::shared_ptr<D9Hook> GetInstance();
+	static std::shared_ptr<D9Hook<EncType>> GetInstance();
 private:
-	static std::shared_ptr<D9Hook> instance;
+	static std::shared_ptr<D9Hook<EncType>> instance;
 	END_SCENE_FUNC endScene;
 	std::shared_ptr<Encode::D9EncodePipeline<EncType>> encodePipeline;
 };
-

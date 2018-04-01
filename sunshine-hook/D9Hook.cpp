@@ -2,13 +2,14 @@
 #include "D9Hook.h"
 #include <d3d9.h>
 #include "AmdEncoder.h"
+#include "NvidiaEncoder.h"
 
 #pragma comment (lib, "d3d9.lib")
 
 static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 {
 	//	Perform backbuffer capture and encoding.
-	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
+	auto hook = D9Hook<Encode::NvidiaEncoder>::GetInstance();
 	auto pipeline = hook->GetEncodePipeline(device);
 
 	//	Get back buffer
@@ -51,3 +52,4 @@ std::shared_ptr<D9Hook<EncType>> D9Hook<EncType>::GetInstance()
 };
 
 template class D9Hook<Encode::AmdEncoder>;
+template class D9Hook<Encode::NvidiaEncoder>;

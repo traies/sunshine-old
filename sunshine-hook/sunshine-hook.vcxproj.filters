@@ -25,6 +25,9 @@
     <Filter Include="Header Files\Hook">
       <UniqueIdentifier>{9a3cba34-49db-48f2-ac08-934c7867ad2b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Encode">
+      <UniqueIdentifier>{5d8b6cf6-cf2d-4a10-b940-f4ad39042006}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -34,24 +37,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Bootstrap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EncodePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AmdEncoder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D9EncodePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D11EncodePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GLEncodePipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MessageQueueDispatcher.h">
@@ -86,6 +71,27 @@
     </ClInclude>
     <ClInclude Include="GraphicHook.h">
       <Filter>Header Files\Hook</Filter>
+    </ClInclude>
+    <ClInclude Include="AmdEncoder.h">
+      <Filter>Header Files\Encode</Filter>
+    </ClInclude>
+    <ClInclude Include="D9EncodePipeline.h">
+      <Filter>Header Files\Encode</Filter>
+    </ClInclude>
+    <ClInclude Include="D11EncodePipeline.h">
+      <Filter>Header Files\Encode</Filter>
+    </ClInclude>
+    <ClInclude Include="EncodePipeline.h">
+      <Filter>Header Files\Encode</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoder.h">
+      <Filter>Header Files\Encode</Filter>
+    </ClInclude>
+    <ClInclude Include="GLEncodePipeline.h">
+      <Filter>Header Files\Encode</Filter>
+    </ClInclude>
+    <ClInclude Include="NvidiaEncoder.h">
+      <Filter>Header Files\Encode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +160,9 @@
     </ClCompile>
     <ClCompile Include="GraphicHook.cpp">
       <Filter>Source Files\Hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="NvidiaEncoder.cpp">
+      <Filter>Source Files\Encode</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;..\NvidiaCodecCommon;$(DXSDK_DIR)\include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;$(DXSDK_DIR)\lib\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;..\NvidiaCodecCommon;$(DXSDK_DIR)\include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;$(DXSDK_DIR)\lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;..\NvidiaCodecCommon;$(DXSDK_DIR)\include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;$(DXSDK_DIR)\lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;..\NvidiaCodecCommon;$(DXSDK_DIR)\include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\EasyHook-2.7.6270.0-Binaries\NetFX4.0;..\AmfMediaCommon;$(DXSDK_DIR)\lib\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -175,6 +175,7 @@
     <ClInclude Include="Hook.h" />
     <ClInclude Include="InputPipeline.h" />
     <ClInclude Include="MessageQueueDispatcher.h" />
+    <ClInclude Include="NvidiaEncoder.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UDPClient.h" />
@@ -209,6 +210,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="NvidiaEncoder.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -221,6 +223,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NvidiaCodecCommon\NvidiaCodecCommon.vcxproj">
+      <Project>{a8311a2a-7410-4539-bee0-f76dd839ef4e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

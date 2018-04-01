@@ -3,6 +3,7 @@
 #include <include\components\VideoEncoderVCE.h>
 #include "..\easyloggingpp\easylogging++.h"
 #include <gl\GL.h>
+
 #pragma comment (lib, "AmfMediaCommon.lib")
 #pragma comment (lib, "opengl32.lib")
 
@@ -154,6 +155,7 @@ AmdEncoder::AmdEncoder(HDC * hdc)
 
 bool AmdEncoder::SetEncoderProperties(UINT width, UINT height, UINT framerate, amf::AMF_SURFACE_FORMAT format)
 {
+
 	if (encoder == nullptr) {
 		LOG(ERROR) << "Encoder not initialized";
 		return false;
@@ -367,7 +369,7 @@ bool AmdEncoder::SendSurfaceToEncoder(amf::AMFSurfacePtr surface)
 	return true;
 }
 
-bool AmdEncoder::PullBuffer(uint8_t ** data, uint64_t * size)
+auto AmdEncoder::PullBuffer() -> std::unique_ptr<std::vector<std::vector<uint8_t>>>
 {
 	amf::AMFData * d;
 	auto res = encoder->QueryOutput(&d);
@@ -377,10 +379,9 @@ bool AmdEncoder::PullBuffer(uint8_t ** data, uint64_t * size)
 		return false;
 	} 
 	amf::AMFBufferPtr buffer(d);
-	*data = static_cast<uint8_t *>(buffer->GetNative());
-	*size = static_cast<uint64_t>(buffer->GetSize());
-	return true;
-}
-AmdEncoder::~AmdEncoder()
-{
+	auto data = static_cast<uint8_t *>(buffer->GetNative());
+	auto size = static_cast<uint64_t>(buffer->GetSize());
+
+	std::vector<std::vector<uint8_t>> v(data, data + size);
+	return std::make_unique<std::vector<std::vector<uint8_t>>>(v);
 }

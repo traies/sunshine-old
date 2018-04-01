@@ -10,13 +10,12 @@ namespace Encode {
 		AmdEncoder(IDirect3DDevice9 * device);
 		AmdEncoder(ID3D11Device * device);
 		AmdEncoder(HDC * hdc);
-		~AmdEncoder();
+		~AmdEncoder() {};
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;
 		bool PutFrame(GLuint * texture) override;
-		bool PullBuffer(uint8_t ** buffer, uint64_t * size) override;
+		std::unique_ptr<std::vector<std::vector<uint8_t>>> PullBuffer() override;
 	private:
-		AmdEncoder() {};
 		amf::AMFContextPtr context;
 		amf::AMFComponentPtr encoder;
 		bool InitContext(amf::AMFFactory ** factory);
