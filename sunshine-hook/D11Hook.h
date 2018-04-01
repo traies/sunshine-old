@@ -2,7 +2,7 @@
 #include "GraphicHook.h"
 #include "D11EncodePipeline.h"
 #include "AmdEncoder.h"
-
+#include "NvidiaEncoder.h"
 typedef HRESULT(STDMETHODCALLTYPE * CREATE_DEVICE_AND_SWAP_TYPE)(
 	IDXGIAdapter *pAdapter,
 	D3D_DRIVER_TYPE DriverType,
@@ -119,7 +119,7 @@ static HRESULT WINAPI HookPresent(
 	UINT Flags)
 {
 	//	Perform backbuffer capture and encoding
-	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
+	auto hook = D11Hook<Encode::NvidiaEncoder>::GetInstance();
 	ID3D11Device * device;
 	This->GetDevice(__uuidof(device), (void **)&device);
 	auto pipeline = hook->GetEncodePipeline(device);

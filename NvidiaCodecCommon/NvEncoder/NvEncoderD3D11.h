@@ -21,10 +21,11 @@
 class __declspec(dllexport) NvEncoderD3D11 : public NvEncoder
 {
 public:
-    NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint32_t nHeight, NV_ENC_BUFFER_FORMAT eBufferFormat, 
+	NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint32_t nHeight, NV_ENC_BUFFER_FORMAT eBufferFormat,  DXGI_FORMAT d3d11Format,
         uint32_t nExtraOutputDelay = 3, bool bMotionEstimationOnly = false);
     virtual ~NvEncoderD3D11();
 private:
+	DXGI_FORMAT GetD3D11Format();
     /**
     *  @brief This function is used to allocate input buffers for encoding.
     *  This function is an override of virtual function NvEncoder::AllocateInputBuffers().
@@ -46,4 +47,5 @@ private:
 private:
     ID3D11Device *m_pD3D11Device = nullptr;
     ID3D11DeviceContext* m_pD3D11DeviceContext = nullptr;
+	DXGI_FORMAT d3d11Format;
 };

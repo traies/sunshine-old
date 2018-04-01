@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "D11Hook.h"
 #include "AmdEncoder.h"
-
+#include "NvidiaEncoder.h"
 template<typename EncType>
 PRESENT_SWAP_FUNC D11Hook<EncType>::GetPresent()
 {
@@ -42,3 +42,4 @@ std::shared_ptr<D11Hook<EncType>> D11Hook<EncType>::GetInstance()
 
 
 template class D11Hook<Encode::AmdEncoder>;
+template class D11Hook<Encode::NvidiaEncoder>;

@@ -5,6 +5,7 @@
 #include "..\easyloggingpp\easylogging++.h"
 #include <NvEncoder\NvEncoder.h>
 #include <NvEncoder\NvEncoderD3D9.h>
+#include <NvEncoder\NvEncoderD3D11.h>
 #include <queue>
 
 namespace Encode {
@@ -17,7 +18,17 @@ namespace Encode {
 			d3d11device(device) {};
 		NvidiaEncoder(HDC * hdc) :
 			hdc(hdc) {};
-		~NvidiaEncoder() {};
+		~NvidiaEncoder() 
+		{
+			try {
+				if (encoder != nullptr) {
+					encoder.release();
+				}
+			}
+			catch (std::exception& ex) {
+				LOG(ERROR) << ex.what();
+			}
+		};
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;
 		bool PutFrame(GLuint * texture) override;
@@ -26,10 +37,11 @@ namespace Encode {
 		IDirect3DDevice9 * d3d9device;
 		ID3D11Device * d3d11device;
 		HDC * hdc;
-		std::unique_ptr<NvEncoderD3D9> encoder;
+		std::unique_ptr<NvEncoder> encoder;
 		std::queue <std::vector<std::vector<uint8_t>>> queue;
 		std::mutex m;
 		bool InitEncoder(IDirect3DSurface9 * frame);
+		bool InitEncoder(ID3D11Texture2D * frame);
 	};
 }
 

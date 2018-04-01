@@ -20,22 +20,15 @@
 #define MAKEFOURCC(a,b,c,d) (((unsigned int)a) | (((unsigned int)b)<< 8) | (((unsigned int)c)<<16) | (((unsigned int)d)<<24) )
 #endif
 
-DXGI_FORMAT GetD3D11Format(NV_ENC_BUFFER_FORMAT eBufferFormat)
+DXGI_FORMAT NvEncoderD3D11::GetD3D11Format()
 {
-    switch (eBufferFormat)
-    {
-    case NV_ENC_BUFFER_FORMAT_NV12:
-        return DXGI_FORMAT_NV12;
-    case NV_ENC_BUFFER_FORMAT_ARGB:
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-    default:
-        return DXGI_FORMAT_UNKNOWN;
-    }
+	return d3d11Format;
 }
 
 NvEncoderD3D11::NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint32_t nHeight,
-    NV_ENC_BUFFER_FORMAT eBufferFormat,  uint32_t nExtraOutputDelay, bool bMotionEstimationOnly) :
-    NvEncoder(NV_ENC_DEVICE_TYPE_DIRECTX, pD3D11Device, nWidth, nHeight, eBufferFormat, nExtraOutputDelay, bMotionEstimationOnly)
+    NV_ENC_BUFFER_FORMAT eBufferFormat, DXGI_FORMAT d3d11Format, uint32_t nExtraOutputDelay, bool bMotionEstimationOnly) :
+    NvEncoder(NV_ENC_DEVICE_TYPE_DIRECTX, pD3D11Device, nWidth, nHeight, eBufferFormat, nExtraOutputDelay, bMotionEstimationOnly),
+	d3d11Format(d3d11Format)
 {
     if (!pD3D11Device)
     {
@@ -43,7 +36,7 @@ NvEncoderD3D11::NvEncoderD3D11(ID3D11Device* pD3D11Device, uint32_t nWidth, uint
         return;
     }
 
-    if (GetD3D11Format(GetPixelFormat()) == DXGI_FORMAT_UNKNOWN)
+    if (GetD3D11Format() == DXGI_FORMAT_UNKNOWN)
     {
         NVENC_THROW_ERROR("Unsupported Buffer format", NV_ENC_ERR_INVALID_PARAM);
     }
@@ -84,7 +77,7 @@ void NvEncoderD3D11::AllocateInputBuffers(int32_t numInputBuffers)
             desc.Height = GetMaxEncodeHeight();
             desc.MipLevels = 1;
             desc.ArraySize = 1;
-            desc.Format = GetD3D11Format(GetPixelFormat());
+            desc.Format = GetD3D11Format();
             desc.SampleDesc.Count = 1;
             desc.Usage = D3D11_USAGE_DEFAULT;
             desc.BindFlags = D3D11_BIND_RENDER_TARGET;

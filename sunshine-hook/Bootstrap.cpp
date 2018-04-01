@@ -33,8 +33,8 @@ void Bootstrap::Init() {
 		return;
 	}*/
 	InstallHookD9();
-	/*InstallHookD11();
-	InstallHookOpenGL();*/
+	InstallHookD11();
+	//InstallHookOpenGL();
 	//InitInputPipeline();
 	return;
 }
@@ -76,7 +76,13 @@ void Bootstrap::InstallHookD9()
 
 void Bootstrap::InstallHookD11()
 {
-	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
+#ifdef NVIDIA_ENC
+	auto hook = D11Hook<Encode::NvidiaEncoder>::GetInstance();
+#endif // NVIDIA_ENC
+
+#ifndef NVIDIA_ENC
+	//auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
+#endif
 	hook->SetPipe(pipe);
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
