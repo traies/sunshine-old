@@ -119,7 +119,13 @@ static HRESULT WINAPI HookPresent(
 	UINT Flags)
 {
 	//	Perform backbuffer capture and encoding
+#ifdef NVIDIA_ENC
 	auto hook = D11Hook<Encode::NvidiaEncoder>::GetInstance();
+#endif
+#ifndef NVIDIA_ENC
+	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
+#endif
+
 	ID3D11Device * device;
 	This->GetDevice(__uuidof(device), (void **)&device);
 	auto pipeline = hook->GetEncodePipeline(device);

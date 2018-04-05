@@ -54,17 +54,18 @@ bool NvidiaEncoder::PutFrame(GLuint * texture)
 	return false;
 }
 
-std::unique_ptr<std::vector<std::vector<uint8_t>>> NvidiaEncoder::PullBuffer()
+std::vector<std::vector<uint8_t>> NvidiaEncoder::PullBuffer()
 {
-	 std::unique_ptr<std::vector<std::vector<uint8_t>>> p = nullptr;
-	 m.lock();
 	if (!queue.empty()) {
 		auto packet = queue.front();
 		queue.pop();
-		p = std::make_unique<std::vector<std::vector<uint8_t>>>(packet);
+		return packet;
 	}
-	m.unlock();
-	return p;
+	else {
+		std::vector<std::vector<uint8_t>> packet;
+		return packet;
+	}
+	
 }
 
 bool NvidiaEncoder::InitEncoder(IDirect3DSurface9 * frame)

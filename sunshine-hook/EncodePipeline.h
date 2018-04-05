@@ -29,12 +29,9 @@ namespace Encode {
 		void Encode()
 		{
 			while (true) {
-				std::unique_ptr<std::vector<std::vector<uint8_t>>> buffer = encoder->PullBuffer();
-				if (buffer == nullptr) {
-					/*LOG(ERROR) << "Encoder returned nothing";*/
-				}
-				if (buffer != nullptr) {
-					for (std::vector<uint8_t> b : *buffer) {
+				auto buffer = encoder->PullBuffer();
+				if (!buffer.empty()) {
+					for (std::vector<uint8_t> b : buffer) {
 						socket->send(b.data(), b.size());
 					}
 				}

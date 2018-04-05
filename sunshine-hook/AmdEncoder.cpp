@@ -369,19 +369,28 @@ bool AmdEncoder::SendSurfaceToEncoder(amf::AMFSurfacePtr surface)
 	return true;
 }
 
-auto AmdEncoder::PullBuffer() -> std::unique_ptr<std::vector<std::vector<uint8_t>>>
+auto AmdEncoder::PullBuffer() -> std::vector<std::vector<uint8_t>>
 {
 	amf::AMFData * d;
 	auto res = encoder->QueryOutput(&d);
 	if (res == AMF_EOF) {
 		//	No more frames are comming.
 		LOG(INFO) << "AMF_EOF: encoder was closed?";
-		return false;
-	} 
-	amf::AMFBufferPtr buffer(d);
-	auto data = static_cast<uint8_t *>(buffer->GetNative());
-	auto size = static_cast<uint64_t>(buffer->GetSize());
-
-	std::vector<std::vector<uint8_t>> v(data, data + size);
-	return std::make_unique<std::vector<std::vector<uint8_t>>>(v);
+		std::vector<std::vector<uint8_t>> v;
+		return v;
+	}
+	else if (res == AMF_OK) {
+		amf::AMFBufferPtr buffer(d);
+		auto data = static_cast<uint8_t *>(buffer->GetNative());
+		auto size = static_cast<uint64_t>(buffer->GetSize());
+		std::vector<uint8_t>d (data, data + size);
+		std::vector<std::vector<uint8_t>> v;
+		v.push_back(d);
+		return v;
+	}
+	else {
+		std::vector<std::vector<uint8_t>> v;
+		return v;
+	}
+	
 }

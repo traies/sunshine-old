@@ -6,6 +6,8 @@
 #include "UDPClient.h"
 #include "InputPipeline.h"
 
+//#define NVIDIA_ENC
+
 #define DEFAULT_FIFO_HEARTBEAT	"sunshine_heartbeat"
 class Bootstrap
 {

@@ -3,13 +3,20 @@
 #include <d3d9.h>
 #include "AmdEncoder.h"
 #include "NvidiaEncoder.h"
+#include "Bootstrap.h"
 
 #pragma comment (lib, "d3d9.lib")
 
 static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 {
 	//	Perform backbuffer capture and encoding.
+#ifdef NVIDIA_ENC
 	auto hook = D9Hook<Encode::NvidiaEncoder>::GetInstance();
+#endif
+#ifndef NVIDIA_ENC
+	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
+#endif
+
 	auto pipeline = hook->GetEncodePipeline(device);
 
 	//	Get back buffer

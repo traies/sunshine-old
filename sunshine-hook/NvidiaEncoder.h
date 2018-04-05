@@ -22,6 +22,8 @@ namespace Encode {
 		{
 			try {
 				if (encoder != nullptr) {
+					std::vector<std::vector<uint8_t>> vPacket;
+					encoder->EndEncode(vPacket);
 					encoder.release();
 				}
 			}
@@ -32,7 +34,7 @@ namespace Encode {
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;
 		bool PutFrame(GLuint * texture) override;
-		std::unique_ptr<std::vector<std::vector<uint8_t>>> PullBuffer() override;
+		std::vector<std::vector<uint8_t>> PullBuffer() override;
 	private:
 		IDirect3DDevice9 * d3d9device;
 		ID3D11Device * d3d11device;
@@ -42,6 +44,8 @@ namespace Encode {
 		std::mutex m;
 		bool InitEncoder(IDirect3DSurface9 * frame);
 		bool InitEncoder(ID3D11Texture2D * frame);
+		bool encoderInit = false;
+		bool f = false;
 	};
 }
 

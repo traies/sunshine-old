@@ -11,7 +11,7 @@
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 
-#define NVIDIA_ENC
+
 
 Bootstrap::~Bootstrap()
 {
@@ -61,7 +61,7 @@ void Bootstrap::InstallHookD9()
 #endif // NVIDIA_ENC
 
 #ifndef NVIDIA_ENC
-	//auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
+	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
 #endif
 	
 	hook->SetPipe(pipe);
@@ -81,7 +81,7 @@ void Bootstrap::InstallHookD11()
 #endif // NVIDIA_ENC
 
 #ifndef NVIDIA_ENC
-	//auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
+	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
 #endif
 	hook->SetPipe(pipe);
 	hook->SetSocket(socket);
