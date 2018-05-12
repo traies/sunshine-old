@@ -9,7 +9,6 @@
 
 static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 {
-	//	Perform backbuffer capture and encoding.
 #ifdef NVIDIA_ENC
 	auto hook = D9Hook<Encode::NvidiaEncoder>::GetInstance();
 #endif

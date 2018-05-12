@@ -180,6 +180,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="UDPClient.h" />
     <ClInclude Include="UDPServer.h" />
+    <ClInclude Include="WndProcHook.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\easyloggingpp\easylogging++.cc">
@@ -220,6 +221,7 @@
     <ClCompile Include="sunshine-hook.cpp" />
     <ClCompile Include="UDPClient.cpp" />
     <ClCompile Include="UDPServer.cpp" />
+    <ClCompile Include="WndProcHook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

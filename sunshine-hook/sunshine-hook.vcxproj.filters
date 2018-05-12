@@ -93,6 +93,9 @@
     <ClInclude Include="NvidiaEncoder.h">
       <Filter>Header Files\Encode</Filter>
     </ClInclude>
+    <ClInclude Include="WndProcHook.h">
+      <Filter>Header Files\Hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -163,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="NvidiaEncoder.cpp">
       <Filter>Source Files\Encode</Filter>
+    </ClCompile>
+    <ClCompile Include="WndProcHook.cpp">
+      <Filter>Source Files\Hooks</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

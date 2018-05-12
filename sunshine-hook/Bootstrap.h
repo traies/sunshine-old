@@ -14,14 +14,12 @@ class Bootstrap
 private:
 	void InitLogger();
 	auto InitSocket();
-	bool InitOutputPipe();
 	void InstallHookD9();
 	void InstallHookD11();
 	void InstallHookOpenGL();
 	void InitInputPipeline();
 	void HeartbeatSend(std::shared_ptr<boost::interprocess::message_queue> mq);
 	
-	HANDLE pipe;
 	bool stop = false;
 	std::shared_ptr<UDPClient> socket;
 	std::shared_ptr<std::thread> heartbeat;

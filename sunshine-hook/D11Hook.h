@@ -23,7 +23,7 @@ typedef HRESULT(STDMETHODCALLTYPE * PRESENT_SWAP_FUNC)(
 	UINT SyncInterval,
 	UINT Flags);
 
-static HRESULT WINAPI HookPresent(
+HRESULT WINAPI HookPresent(
 	IDXGISwapChain * This,
 	UINT SyncInterval,
 	UINT Flags);
@@ -113,29 +113,3 @@ private:
 	PRESENT_SWAP_FUNC presentSwap;
 };
 
-static HRESULT WINAPI HookPresent(
-	IDXGISwapChain * This,
-	UINT SyncInterval,
-	UINT Flags)
-{
-	//	Perform backbuffer capture and encoding
-#ifdef NVIDIA_ENC
-	auto hook = D11Hook<Encode::NvidiaEncoder>::GetInstance();
-#endif
-#ifndef NVIDIA_ENC
-	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
-#endif
-
-	ID3D11Device * device;
-	This->GetDevice(__uuidof(device), (void **)&device);
-	auto pipeline = hook->GetEncodePipeline(device);
-
-	//	Get backbuffer.
-	ID3D11Texture2D * backbuffer;
-	This->GetBuffer(0, __uuidof(backbuffer), (void **)&backbuffer);
-	if (!pipeline->Call(backbuffer)) {
-		LOG(ERROR) << "EncodePipeline failed.";
-		//	ExitProcess(1);
-	}
-	return hook->GetPresent()(This, SyncInterval, Flags);
-}
