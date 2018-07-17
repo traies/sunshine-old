@@ -169,6 +169,7 @@
     <ClInclude Include="EncodePipeline.h" />
     <ClInclude Include="Encoder.h" />
     <ClInclude Include="ExitProcessHook.h" />
+    <ClInclude Include="FocusHook.h" />
     <ClInclude Include="GLEncodePipeline.h" />
     <ClInclude Include="GLHook.h" />
     <ClInclude Include="GraphicHook.h" />

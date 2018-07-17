@@ -8,17 +8,11 @@
 #include "InputPipeline.h"
 #include "AmdEncoder.h"
 #include "NvidiaEncoder.h"
+#include "FocusHook.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 
-
-
-Bootstrap::~Bootstrap()
-{
-
-}
-
-auto Bootstrap::InitSocket()
+std::shared_ptr<UDPClient> Bootstrap::InitSocket()
 {
 	return std::make_shared<UDPClient>("127.0.0.1", 1234);
 }
@@ -36,6 +30,7 @@ void Bootstrap::Init() {
 	InstallHookD11();
 	//InstallHookOpenGL();
 	InitInputPipeline();
+	
 	return;
 }
 

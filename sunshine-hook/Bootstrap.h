@@ -13,7 +13,7 @@ class Bootstrap
 {
 private:
 	void InitLogger();
-	auto InitSocket();
+	std::shared_ptr<UDPClient> InitSocket();
 	void InstallHookD9();
 	void InstallHookD11();
 	void InstallHookOpenGL();
@@ -27,7 +27,7 @@ private:
 	static std::unique_ptr<InputPipeline> inputPipeline;
 public:
 	Bootstrap() : mq(std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only, DEFAULT_FIFO_HEARTBEAT)) {};
-	~Bootstrap();
+	~Bootstrap() {};
 	void Init();
 
 	std::shared_ptr<UDPClient> GetSocket() { return socket; };
