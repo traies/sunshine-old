@@ -14,6 +14,11 @@ void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int
 	LOG(INFO) << "Key: " << key << ". Scancode: " << scancode << ". Action: " << action << ". Mods: " << mods;
 }
 
+//void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
+//{
+//	LOG(INFO) << "Key: " << key << ". Scancode: " << scancode << ". Action: " << action << ". Mods: " << mods;
+//}
+
 void RendererWindow::CloseAndExit(int code)
 {
 	exit = true;

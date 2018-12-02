@@ -17,7 +17,7 @@ private:
 	static void KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods);
 	void CloseAndExit(int code);
 public:
-	RendererWindow(int width, int height, const char * title) :
+	RendererWindow(int width, int height, const char * title, const char * ip, const char * port) :
 		width(width), height(height), title(title) 
 	{
 		//	Creating a window
@@ -46,7 +46,7 @@ public:
 		mpv->SetProperty("profile", "low-latency");
 		mpv->SetProperty("vo", "libmpv");
 		mpv->SetProperty("hwdec", "no");
-		mpv->SetProperty("d3d11-sync-interval", 0);
+		mpv->SetProperty("d3d11-sync-interval", 1 );
 		mpv->SetProperty("untimed");
 		mpv->SetProperty("no-cache");
 
@@ -55,7 +55,12 @@ public:
 		mpv->InitOpenGL();
 
 		//	Send loadfile command
-		mpv->Command("loadfile", { "udp://127.0.0.1:1234" });
+
+		std::stringstream ipStream;
+		ipStream << "tcp://" << ip << ":" << port;
+		
+
+		mpv->Command("loadfile", { ipStream.str().c_str() });
 
 	};
 
