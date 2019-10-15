@@ -49,7 +49,7 @@ public:
 	WndProcHook(HWND window) : window(window)
 	{
 		Sleep(REHOOK_TIMEOUT);
-		//ShowWindow(window, SW_HIDE);
+		ShowWindow(window, SW_HIDE);
 		oldProc = (WNDPROC)SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)&TempWndProc);
 		Sleep(REHOOK_TIMEOUT);
 		for (int i=0; i < MAX_REHOOKS; i++) {

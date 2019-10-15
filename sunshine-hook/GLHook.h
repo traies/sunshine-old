@@ -13,13 +13,15 @@ typedef BOOL(WINAPI * SWAP_LAYER_BUFFERS_FUNC)(
 	HDC hdcm,
 	UINT fuPlanes);
 
-template <typename EncType>
-class GLHook: public GraphicHook<Encode::GLEncodePipeline<EncType>, HDC>
+class GLHook: public GraphicHook<Encode::GLEncodePipeline, HDC>
 {
 public:
-	GLHook() {};
-	std::shared_ptr<Encode::GLEncodePipeline<EncType>> GetEncodePipeline(HDC * device) override;
-	static std::shared_ptr<GLHook> GetInstance();
+	GLHook(std::unique_ptr<Encode::Encoder> encoder) : GraphicHook(std::move(encoder)) {};
+	static GLHook* CreateInstance(std::unique_ptr<Encode::Encoder> encoder);
+	
+	std::shared_ptr<Encode::GLEncodePipeline> GetEncodePipeline(HDC * device) override;
+	
+	static GLHook* GetInstance();
 	
 	bool Install()
 	{
@@ -42,15 +44,15 @@ public:
 	bool Uninstall();
 	SWAP_BUFFERS_FUNC GetSwapBuffers();
 private:
-	static std::shared_ptr<GLHook> instance;
-	std::shared_ptr<Encode::GLEncodePipeline<EncType>> encodePipeline;
+	static GLHook* instance;
+	std::shared_ptr<Encode::GLEncodePipeline> encodePipeline;
 	SWAP_BUFFERS_FUNC swapBuffers;
 };
 
 static BOOL WINAPI HookSwapBuffers(HDC hdc)
 {
 	//	Perform backbuffer capture and encoding.
-	auto hook = GLHook<Encode::AmdEncoder>::GetInstance();
+	auto hook = GLHook::GetInstance();
 
 	auto encodePipeline = hook->GetEncodePipeline(&hdc);
 

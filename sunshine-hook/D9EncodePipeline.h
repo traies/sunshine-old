@@ -6,12 +6,11 @@
 #include "UDPClient.h"
 
 namespace Encode {
-	template <typename EncType>
-	class D9EncodePipeline  : public EncodePipeline<IDirect3DSurface9, EncType>
+	class D9EncodePipeline  : public EncodePipeline<IDirect3DSurface9>
 	{
 	public:
-		D9EncodePipeline(IDirect3DDevice9 * device, HANDLE pipe, std::shared_ptr<UDPClient> socket) 
-			: EncodePipeline<IDirect3DSurface9, EncType>(std::make_unique<EncType>(device), pipe, socket)
+		D9EncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket) 
+			: EncodePipeline<IDirect3DSurface9>(std::move(encoder), pipe, socket)
 		{
 		};
 		bool Call(IDirect3DSurface9 * frame) override

@@ -50,7 +50,7 @@ bool AmdEncoder::InitContext(amf::AMFFactory ** factory)
 }
 
 
-AmdEncoder::AmdEncoder(IDirect3DDevice9 * device)
+void AmdEncoder::Init(IDirect3DDevice9 * device)
 {
 	amf::AMFFactory * factory(nullptr);
 	{
@@ -83,7 +83,7 @@ AmdEncoder::AmdEncoder(IDirect3DDevice9 * device)
 	LOG(INFO) << "Everything was created fine.";
 }
 
-AmdEncoder::AmdEncoder(ID3D11Device * device)
+void AmdEncoder::Init(ID3D11Device * device)
 {
 	amf::AMFFactory * factory(nullptr);
 	{
@@ -116,7 +116,7 @@ AmdEncoder::AmdEncoder(ID3D11Device * device)
 	LOG(INFO) << "Everything was created fine.";
 }
 
-AmdEncoder::AmdEncoder(HDC * hdc)
+void AmdEncoder::Init(HDC * hdc)
 {
 	amf::AMFFactory * factory(nullptr);
 	{
@@ -362,7 +362,7 @@ bool AmdEncoder::SendSurfaceToEncoder(amf::AMFSurfacePtr surface)
 	{
 		auto res = encoder->SubmitInput(pDuplicated);
 		if (res != AMF_OK) {
-			LOG(ERROR) << "Encoder SubmitInput failed.";
+			LOG(ERROR) << "Encoder SubmitInput failed." << res << std::endl;
 			return false;
 		}
 	}

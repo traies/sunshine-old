@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29409.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sunshine", "sunshine\sunshine.vcxproj", "{64CAF155-8C90-4583-8CA3-B4D94528AB1C}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -14,7 +14,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sunshine-hook", "sunshine-h
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NvidiaCodecCommon", "NvidiaCodecCommon\NvidiaCodecCommon.vcxproj", "{A8311A2A-7410-4539-BEE0-F76DD839EF4E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common-headers", "common-headers\common-headers.vcxitems", "{AB54DC13-4380-4635-AF3A-8A0381B3A280}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		common-headers\common-headers.vcxitems*{64caf155-8c90-4583-8ca3-b4d94528ab1c}*SharedItemsImports = 4
+		common-headers\common-headers.vcxitems*{ab54dc13-4380-4635-af3a-8a0381b3a280}*SharedItemsImports = 9
+		common-headers\common-headers.vcxitems*{ab676f20-5354-45c5-a134-14707a8373a7}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86

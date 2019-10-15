@@ -7,9 +7,9 @@
 namespace Encode {
 	class AmdEncoder : public Encoder {
 	public:
-		AmdEncoder(IDirect3DDevice9 * device);
-		AmdEncoder(ID3D11Device * device);
-		AmdEncoder(HDC * hdc);
+		void Init(IDirect3DDevice9 * device) override;
+		void Init(ID3D11Device * device) override;
+		void Init(HDC * hdc) override;
 		~AmdEncoder() {};
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;

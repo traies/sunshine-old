@@ -4,12 +4,11 @@
 #include <thread>
 
 namespace Encode {
-	template <typename EncType>
-	class D11EncodePipeline: public EncodePipeline<ID3D11Texture2D, EncType>
+	class D11EncodePipeline: public EncodePipeline<ID3D11Texture2D>
 	{
 	public:
-		D11EncodePipeline(ID3D11Device * device, HANDLE pipe, std::shared_ptr<UDPClient> socket)
-			: EncodePipeline<ID3D11Texture2D, EncType>(std::make_unique<EncType>(device), pipe, socket)
+		D11EncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket)
+			: EncodePipeline<ID3D11Texture2D>(std::move(encoder), pipe, socket)
 		{
 		};
 		bool Call(ID3D11Texture2D * frame) override

@@ -9,12 +9,7 @@
 
 static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 {
-#ifdef NVIDIA_ENC
-	auto hook = D9Hook<Encode::NvidiaEncoder>::GetInstance();
-#endif
-#ifndef NVIDIA_ENC
-	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
-#endif
+	auto hook = D9Hook::GetInstance();
 
 	auto pipeline = hook->GetEncodePipeline(device);
 
@@ -30,32 +25,32 @@ static HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device)
 	return hook->GetEndScene()(device);
 }
 
-template<typename EncType>
-bool D9Hook<EncType>::Uninstall()
+bool D9Hook::Uninstall()
 {
 	return false;
 }
 
-template <typename EncType>
-std::shared_ptr<Encode::D9EncodePipeline<EncType>> D9Hook<EncType>::GetEncodePipeline(IDirect3DDevice9 * device)
+std::shared_ptr<Encode::D9EncodePipeline> D9Hook::GetEncodePipeline(IDirect3DDevice9 * device)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::D9EncodePipeline<EncType>>(device, this->pipe, this->socket);
+		_encoder->Init(device);
+		encodePipeline = std::make_shared<Encode::D9EncodePipeline>(std::move(_encoder), this->pipe, this->socket);
 	}
 	return encodePipeline;
 }
 
-template <typename EncType>
-std::shared_ptr<D9Hook<EncType>> D9Hook<EncType>::instance;
-
-template <typename EncType>
-std::shared_ptr<D9Hook<EncType>> D9Hook<EncType>::GetInstance()
+D9Hook*  D9Hook::GetInstance()
 {
 	if (instance == nullptr) {
-		instance = std::make_shared<D9Hook<EncType>>();
+		LOG(ERROR) << "Tried to get d9 hook without setting it up first.";
 	}
 	return instance;
 };
 
-template class D9Hook<Encode::AmdEncoder>;
-template class D9Hook<Encode::NvidiaEncoder>;
+D9Hook* D9Hook::CreateInstance(std::unique_ptr<Encode::Encoder> encoder)
+{
+	instance = new D9Hook(std::move(encoder));
+	return instance;
+}
+
+D9Hook* D9Hook::instance;

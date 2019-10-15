@@ -18,9 +18,10 @@ private:
 	bool stop = false;
 	std::thread io_service_thread;
 	std::unique_ptr<boost::asio::io_service> io_service;
-	std::unique_ptr<udp::socket> socket;
+	std::unique_ptr<tcp::socket> socket;
 	std::unique_ptr<boost::asio::io_service::work> work;	// While this exists, the service will keep on running.
-	udp::endpoint destination;
+	tcp::endpoint destination;
+	std::mutex _mutex;
 	
 	void WriteHandler(
 		const boost::system::error_code& ec,

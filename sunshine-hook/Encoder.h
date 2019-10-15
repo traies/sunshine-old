@@ -15,5 +15,13 @@ namespace Encode {
 		virtual bool PutFrame(IDirect3DSurface9 * frame) = 0;
 		virtual bool PutFrame(GLuint * texture) = 0;
 		virtual std::vector<std::vector<uint8_t>> PullBuffer() = 0;
+		virtual void Init(IDirect3DDevice9* device) = 0;
+		virtual void Init(ID3D11Device* device) = 0;
+		virtual void Init(HDC* hdc) = 0;
+	};
+
+	enum EncoderType {
+		AMD,
+		NVIDIA,
 	};
 }

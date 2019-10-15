@@ -2,18 +2,17 @@
 #include "GLHook.h"
 #include "AmdEncoder.h"
 
-template <typename EncType>
-std::shared_ptr<Encode::GLEncodePipeline<EncType>> GLHook<EncType>::GetEncodePipeline(HDC * hdc)
+std::shared_ptr<Encode::GLEncodePipeline> GLHook::GetEncodePipeline(HDC * hdc)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::GLEncodePipeline<EncType>>(hdc, this->pipe, this->socket);
+		_encoder->Init(hdc);
+		encodePipeline = std::make_shared<Encode::GLEncodePipeline>(std::move(_encoder), this->pipe, this->socket);
 	}
 	return encodePipeline;
 
 }
 
-template <typename EncType>
-SWAP_BUFFERS_FUNC GLHook<EncType>::GetSwapBuffers()
+SWAP_BUFFERS_FUNC GLHook::GetSwapBuffers()
 {
 	if (swapBuffers == nullptr) {
 		// Should probably throw an exception.
@@ -23,22 +22,23 @@ SWAP_BUFFERS_FUNC GLHook<EncType>::GetSwapBuffers()
 	return swapBuffers;
 }
 
-template <typename EncType>
-bool GLHook<EncType>::Uninstall()
+bool GLHook::Uninstall()
 {
 	return false;
 }
 
-template <typename EncType>
-std::shared_ptr<GLHook<EncType>> GLHook<EncType>::instance;
-
-template <typename EncType>
-std::shared_ptr<GLHook<EncType>> GLHook<EncType>::GetInstance()
+GLHook* GLHook::GetInstance()
 {
 	if (instance == nullptr) {
-		instance = std::make_shared<GLHook<EncType>>();
+		LOG(ERROR) << "Tried to get GL hook without setting it up first.";
 	}
 	return instance;
 };
 
-template class GLHook<Encode::AmdEncoder>;
+GLHook* GLHook::CreateInstance(std::unique_ptr<Encode::Encoder> encoder)
+{
+	instance = new GLHook(std::move(encoder));
+	return instance;
+}
+
+GLHook* GLHook::instance;

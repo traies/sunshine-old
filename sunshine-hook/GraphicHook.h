@@ -12,7 +12,8 @@ public:
 		socket = s;
 	}
 
+	GraphicHook(std::unique_ptr<Encode::Encoder> encoder): _encoder(std::move(encoder)) {};
 protected:
-	GraphicHook() {};
 	std::shared_ptr<UDPClient> socket;
+	std::unique_ptr<Encode::Encoder> _encoder;
 };

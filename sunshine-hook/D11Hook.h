@@ -28,14 +28,14 @@ HRESULT WINAPI HookPresent(
 	UINT SyncInterval,
 	UINT Flags);
 
-template <typename EncType>
-class D11Hook : public GraphicHook<Encode::D11EncodePipeline<EncType>, ID3D11Device>
+class D11Hook : public GraphicHook<Encode::D11EncodePipeline, ID3D11Device>
 {
 public:
-	D11Hook() {};
-	std::shared_ptr<Encode::D11EncodePipeline<EncType>> GetEncodePipeline(ID3D11Device * device) override;
+	D11Hook(std::unique_ptr<Encode::Encoder> encoder): GraphicHook(std::move(encoder)) {};
+	std::shared_ptr<Encode::D11EncodePipeline> GetEncodePipeline(ID3D11Device * device) override;
 	
-	static std::shared_ptr<D11Hook> GetInstance();
+	static D11Hook* CreateInstance(std::unique_ptr<Encode::Encoder> encoder);
+	static D11Hook* GetInstance();
 	PRESENT_SWAP_FUNC GetPresent();
 	bool Install()
 	{
@@ -108,8 +108,8 @@ public:
 	};
 	bool Uninstall();
 private:
-	static std::shared_ptr<D11Hook> instance;
-	std::shared_ptr<Encode::D11EncodePipeline<EncType>> encodePipeline;
+	static D11Hook * instance;
+	std::shared_ptr<Encode::D11EncodePipeline> encodePipeline;
 	PRESENT_SWAP_FUNC presentSwap;
 };
 

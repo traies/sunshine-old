@@ -2,12 +2,11 @@
 #include "EncodePipeline.h"
 #include <thread>
 namespace Encode {
-	template <typename EncType>
-	class GLEncodePipeline : public EncodePipeline<HDC, EncType>
+	class GLEncodePipeline : public EncodePipeline<HDC>
 	{
 	public:
-		GLEncodePipeline(HDC * hdc, HANDLE pipe, std::shared_ptr<UDPClient> socket): 
-			EncodePipeline<HDC, EncType>(std::make_unique<EncType>(hdc), pipe, socket)
+		GLEncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket): 
+			EncodePipeline<HDC>(std::move(encoder), pipe, socket)
 		{
 		};
 

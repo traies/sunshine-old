@@ -10,12 +10,7 @@ static HRESULT WINAPI HookPresent(
 	UINT Flags)
 {
 	//	Perform backbuffer capture and encoding
-#ifdef NVIDIA_ENC
-	auto hook = D11Hook<Encode::NvidiaEncoder>::GetInstance();
-#endif
-#ifndef NVIDIA_ENC
-	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
-#endif
+	auto hook = D11Hook::GetInstance();
 
 	ID3D11Device * device;
 	This->GetDevice(__uuidof(device), (void **)&device);
@@ -30,8 +25,8 @@ static HRESULT WINAPI HookPresent(
 	}
 	return hook->GetPresent()(This, SyncInterval, Flags);
 }
-template<typename EncType>
-PRESENT_SWAP_FUNC D11Hook<EncType>::GetPresent()
+
+PRESENT_SWAP_FUNC D11Hook::GetPresent()
 {
 	if (presentSwap == nullptr) {
 		// Should probably throw an exception.
@@ -41,34 +36,32 @@ PRESENT_SWAP_FUNC D11Hook<EncType>::GetPresent()
 	return presentSwap;
 }
 
-template<typename EncType>
-std::shared_ptr<Encode::D11EncodePipeline<EncType>> D11Hook<EncType>::GetEncodePipeline(ID3D11Device * device)
+std::shared_ptr<Encode::D11EncodePipeline> D11Hook::GetEncodePipeline(ID3D11Device * device)
 {
 	if (encodePipeline == nullptr) {
-		encodePipeline = std::make_shared<Encode::D11EncodePipeline<EncType>>(device, this->pipe, this->socket);
+		_encoder->Init(device);
+		encodePipeline = std::make_shared<Encode::D11EncodePipeline>(std::move(_encoder), this->pipe, this->socket);
 	}
 	return encodePipeline;
 }
 
-template<typename EncType>
-bool D11Hook<EncType>::Uninstall()
+bool D11Hook::Uninstall()
 {
 	return false;
 }
 
-template <typename EncType>
-std::shared_ptr<D11Hook<EncType>> D11Hook<EncType>::instance;
-
-template <typename EncType>
-std::shared_ptr<D11Hook<EncType>> D11Hook<EncType>::GetInstance()
+D11Hook * D11Hook::GetInstance()
 {
 	if (instance == nullptr) {
-		instance = std::make_shared<D11Hook<EncType>>();
+		LOG(ERROR) << "Tried to get d11 hook without setting it up first.";
 	}
 	return instance;
 };
 
+D11Hook* D11Hook::CreateInstance(std::unique_ptr<Encode::Encoder> encoder)
+{
+	instance = new D11Hook(std::move(encoder));
+	return instance;
+}
 
-
-template class D11Hook<Encode::AmdEncoder>;
-template class D11Hook<Encode::NvidiaEncoder>;
+D11Hook* D11Hook::instance;

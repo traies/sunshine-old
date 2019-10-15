@@ -9,18 +9,23 @@
 #include "AmdEncoder.h"
 #include "NvidiaEncoder.h"
 #include "FocusHook.h"
+#include "Encoder.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 
 std::shared_ptr<UDPClient> Bootstrap::InitSocket()
 {
-	return std::make_shared<UDPClient>("127.0.0.1", 1234);
+	LOG(INFO) << "Streaming video to " << _startupInfo->videoIP << ":" << _startupInfo->videoPort;
+	return std::make_shared<UDPClient>(_startupInfo->videoIP, _startupInfo->videoPort);
 }
 
-void Bootstrap::Init() {
+void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	InitLogger();
 	heartbeat = std::make_shared<std::thread>(std::thread(&Bootstrap::HeartbeatSend, this, mq));
 	
+	_startupInfo= reinterpret_cast<RemoteProcessStartInfo * >(info->UserData);
+	LOG(INFO) << _startupInfo->videoIP;
+	LOG(INFO) << _startupInfo->encoderAPI;
 	socket = InitSocket();
 	/*if (!InitOutputPipe()) {
 		LOG(ERROR) << "InitOutputPipe failed.";
@@ -29,7 +34,7 @@ void Bootstrap::Init() {
 	InstallHookD9();
 	InstallHookD11();
 	//InstallHookOpenGL();
-	InitInputPipeline();
+	//InitInputPipeline();
 	
 	return;
 }
@@ -51,14 +56,15 @@ void Bootstrap::InitLogger() {
 
 void Bootstrap::InstallHookD9()
 {
-#ifdef NVIDIA_ENC
-	auto hook = D9Hook<Encode::NvidiaEncoder>::GetInstance();
-#endif // NVIDIA_ENC
-
-#ifndef NVIDIA_ENC
-	auto hook = D9Hook<Encode::AmdEncoder>::GetInstance();
-#endif
-	
+	D9Hook * hook;
+	if (strcmp(_startupInfo->encoderAPI, "NVIDIA") == 0) {
+		LOG(INFO) << "Using NVIDIA encoder...";
+		hook = D9Hook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>());
+	}
+	else {
+		LOG(INFO) << "Using AMD encoder...";
+		hook = D9Hook::CreateInstance(std::make_unique<Encode::AmdEncoder>());
+	}
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
 	auto ins = hook->Install();
@@ -70,13 +76,15 @@ void Bootstrap::InstallHookD9()
 
 void Bootstrap::InstallHookD11()
 {
-#ifdef NVIDIA_ENC
-	auto hook = D11Hook<Encode::NvidiaEncoder>::GetInstance();
-#endif // NVIDIA_ENC
-
-#ifndef NVIDIA_ENC
-	auto hook = D11Hook<Encode::AmdEncoder>::GetInstance();
-#endif
+	D11Hook * hook = nullptr;
+	if (strcmp(_startupInfo->encoderAPI, "NVIDIA") == 0) {
+		LOG(INFO) << "Setting up NVIDIA encoder for D11 hoook...";
+		hook = D11Hook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>());
+	}
+	else {
+		LOG(INFO) << "Setting up AMD encoder for D11 hook...";
+		hook = D11Hook::CreateInstance(std::make_unique<Encode::AmdEncoder>());
+	}
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
 	auto ins = hook->Install();
@@ -88,7 +96,15 @@ void Bootstrap::InstallHookD11()
 
 void Bootstrap::InstallHookOpenGL()
 {
-	auto hook = GLHook<Encode::AmdEncoder>::GetInstance();
+	auto hook = GLHook::GetInstance();
+	if (strcmp(_startupInfo->encoderAPI, "NVIDIA") == 0) {
+		LOG(INFO) << "Setting up NVIDIA encoder for GL hoook...";
+		hook = GLHook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>());
+	}
+	else {
+		LOG(INFO) << "Setting up AMD encoder for GL hook...";
+		hook = GLHook::CreateInstance(std::make_unique<Encode::AmdEncoder>());
+	}
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
 	auto ins = hook->Install();

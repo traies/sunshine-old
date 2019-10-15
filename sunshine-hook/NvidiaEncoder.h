@@ -1,4 +1,5 @@
 #pragma once
+#include "UDPClient.h"
 #include "Encoder.h"
 #include <d3d9.h>
 #include <memory>
@@ -12,12 +13,19 @@ namespace Encode {
 	class NvidiaEncoder : public Encoder
 	{
 	public:
-		NvidiaEncoder(IDirect3DDevice9 * device) :
-			d3d9device(device) {};
-		NvidiaEncoder(ID3D11Device * device):
-			d3d11device(device) {};
-		NvidiaEncoder(HDC * hdc) :
-			hdc(hdc) {};
+
+		void Init(IDirect3DDevice9* device) override
+		{
+			d3d9device = device;
+		};
+		void Init(ID3D11Device* device) override 
+		{
+			d3d11device = device;
+		};
+		void Init(HDC* hdc) override
+		{
+			hdc = hdc;
+		};
 		~NvidiaEncoder() 
 		{
 			try {
@@ -36,9 +44,9 @@ namespace Encode {
 		bool PutFrame(GLuint * texture) override;
 		std::vector<std::vector<uint8_t>> PullBuffer() override;
 	private:
-		IDirect3DDevice9 * d3d9device;
-		ID3D11Device * d3d11device;
-		HDC * hdc;
+		IDirect3DDevice9 * d3d9device = nullptr;
+		ID3D11Device * d3d11device = nullptr;
+		HDC * hdc = nullptr;
 		std::unique_ptr<NvEncoder> encoder;
 		std::queue <std::vector<std::vector<uint8_t>>> queue;
 		std::mutex m;

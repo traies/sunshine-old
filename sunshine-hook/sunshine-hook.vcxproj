@@ -23,7 +23,7 @@
     <ProjectGuid>{AB676F20-5354-45C5-A134-14707A8373A7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>sunshinehook</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -35,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -48,7 +48,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -56,6 +56,7 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\common-headers\common-headers.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -161,7 +162,6 @@
   <ItemGroup>
     <ClInclude Include="AmdEncoder.h" />
     <ClInclude Include="Bootstrap.h" />
-    <ClInclude Include="Context.h" />
     <ClInclude Include="D11EncodePipeline.h" />
     <ClInclude Include="D11Hook.h" />
     <ClInclude Include="D9EncodePipeline.h" />
@@ -192,7 +192,6 @@
     </ClCompile>
     <ClCompile Include="AmdEncoder.cpp" />
     <ClCompile Include="Bootstrap.cpp" />
-    <ClCompile Include="Context.cpp" />
     <ClCompile Include="D11EncodePipeline.cpp" />
     <ClCompile Include="D11Hook.cpp" />
     <ClCompile Include="D9EncodePipeline.cpp" />

@@ -6,12 +6,11 @@
 #include "UDPClient.h"
 
 namespace Encode {
-	template <typename T, typename EncType>
+	template <typename T>
 	class EncodePipeline
 	{
-		static_assert(std::is_base_of<Encoder, EncType>::value, "EncType must derive from Encoder");
 	public:
-		EncodePipeline(std::unique_ptr<EncType> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket): encoder(std::move(encoder)), pipe(pipe), socket(socket) 
+		EncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket): encoder(std::move(encoder)), pipe(pipe), socket(socket) 
 		{
 			encodeThread = std::thread(&EncodePipeline::Encode, this);
 		};
@@ -20,9 +19,8 @@ namespace Encode {
 			encodeThread.join();
 		};
 		virtual bool Call(T * frame) = 0;
-		std::unique_ptr<EncType> encoder;
+		std::unique_ptr<Encoder> encoder;
 	protected:
-		
 		HANDLE pipe;
 		std::shared_ptr<UDPClient> socket;
 		std::thread encodeThread;
@@ -32,7 +30,9 @@ namespace Encode {
 				auto buffer = encoder->PullBuffer();
 				if (!buffer.empty()) {
 					for (std::vector<uint8_t> b : buffer) {
-						socket->send(b.data(), b.size());
+						if (b.size() > 0) {
+							socket->send(b.data(), b.size());
+						}
 					}
 				}
 				else {

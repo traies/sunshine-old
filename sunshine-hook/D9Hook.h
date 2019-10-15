@@ -2,6 +2,7 @@
 #include "GraphicHook.h"
 #include <d3d9.h>
 #include <memory>
+#include "Encoder.h"
 #include "D9EncodePipeline.h"
 #include "..\easyloggingpp\easylogging++.h"
 
@@ -9,12 +10,13 @@ typedef IDirect3D9 * (STDMETHODCALLTYPE * CREATE_DIRECT_TYPE)(UINT SDKVersion);
 typedef HRESULT(WINAPI* END_SCENE_FUNC)(LPDIRECT3DDEVICE9 device);
 HRESULT WINAPI HookEndScene(LPDIRECT3DDEVICE9 device);
 
-template <typename EncType>
 class D9Hook :
-	public GraphicHook<Encode::D9EncodePipeline<EncType>, IDirect3DDevice9>
+	public GraphicHook<Encode::D9EncodePipeline, IDirect3DDevice9>
 {
 public:
-	D9Hook() {};
+	D9Hook(std::unique_ptr<Encode::Encoder> encoder) : GraphicHook(std::move(encoder)) {};
+	static D9Hook* CreateInstance(std::unique_ptr<Encode::Encoder> encoder);
+
 	bool Install()
 	{
 		auto hMod = GetModuleHandle(TEXT("d3d9.dll"));
@@ -106,10 +108,11 @@ public:
 		}
 		return endScene;
 	};
-	std::shared_ptr<Encode::D9EncodePipeline<EncType>> GetEncodePipeline(IDirect3DDevice9 * device) override;
-	static std::shared_ptr<D9Hook<EncType>> GetInstance();
+	std::shared_ptr<Encode::D9EncodePipeline> GetEncodePipeline(IDirect3DDevice9 * device) override;
+	static D9Hook * GetInstance();
 private:
-	static std::shared_ptr<D9Hook<EncType>> instance;
+	static D9Hook * instance;
 	END_SCENE_FUNC endScene;
-	std::shared_ptr<Encode::D9EncodePipeline<EncType>> encodePipeline;
+	std::shared_ptr<Encode::D9EncodePipeline> encodePipeline;
 };
+
