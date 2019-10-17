@@ -1,19 +1,64 @@
 #include "stdafx.h"
 #include "InputPipeline.h"
 #include "..\easyloggingpp\easylogging++.h"
+#include "WndProcHook.h"
+#include <variant>
 #define MAX_TRIES	100
 
 void InputPipeline::Run()
 {
+	LOG(INFO) << "Run input pipeline";
+	bool iResult = _server.Init();
+	if (!iResult) {
+		LOG(ERROR) << "Input server initialization failed.";
+		return;
+	}
+	InputCommand command;
+	bool leftButtonPressed = false;
 	while (true) {
-		UINT key = 0x41;
-		PostMessage(wnd, WM_KEYDOWN, VK_RIGHT, 
-			1 
-			| MapVirtualKey(VK_RIGHT, MAPVK_VK_TO_VSC) << 16
-			| 1 << 24);
-		//PostMessage(wnd, WM_CHAR, key, MapVirtualKey(key, MAPVK_VK_TO_CHAR));
-		//PostMessage(wnd, WM_KEYUP, key, MapVirtualKey(key, MAPVK_VK_TO_VSC));
-		Sleep(1000);
+		ZeroMemory(&command, sizeof(command));
+		int read = NextCommand(command);
+		if (read <= 0) {
+			LOG(ERROR) << "Input socket was closed.";
+			break;
+		}
+		if (command.type == (int16_t) InputCommandType::INPUT_COMMAND_MOUSE) {
+			// Update Mouse state in MouseShadowManager
+			if (command.event1 == (int16_t)ButtonEventType::BUTTON_EVENT_DOWN) {
+				ORIGINAL_WND_PROC(wnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(command.val1, command.val2));
+				leftButtonPressed = true;
+				//ORIGINAL_WND_PROC(wnd, WM_MBUTTONDOWN, MK_LBUTTON, MAKELPARAM(command.val1, command.val2));
+			} else if (command.event1 == (int16_t)ButtonEventType::BUTTON_EVENT_UP) {
+				ORIGINAL_WND_PROC(wnd, WM_LBUTTONUP, MK_LBUTTON, MAKELPARAM(command.val1, command.val2));
+				leftButtonPressed = false;
+				//ORIGINAL_WND_PROC(wnd, WM_MBUTTONUP, MK_LBUTTON, MAKELPARAM(command.val1, command.val2));
+			} else if (command.event2 == (int16_t)ButtonEventType::BUTTON_EVENT_DOWN) {
+				ORIGINAL_WND_PROC(wnd, WM_RBUTTONDOWN, MK_RBUTTON, MAKELPARAM(command.val1, command.val2));
+				//ORIGINAL_WND_PROC(wnd, WM_MBUTTONDOWN, MK_RBUTTON, MAKELPARAM(command.val1, command.val2));
+			} else if (command.event2 == (int16_t)ButtonEventType::BUTTON_EVENT_UP) {
+				ORIGINAL_WND_PROC(wnd, WM_RBUTTONUP, MK_RBUTTON, MAKELPARAM(command.val1, command.val2));
+				//ORIGINAL_WND_PROC(wnd, WM_MBUTTONUP, MK_RBUTTON, MAKELPARAM(command.val1, command.val2));
+			}
+
+			if (leftButtonPressed) {
+				ORIGINAL_WND_PROC(wnd, WM_MOUSEMOVE, MK_LBUTTON, MAKELPARAM(command.val1, command.val2));
+			}
+			else {
+				ORIGINAL_WND_PROC(wnd, WM_MOUSEMOVE, 0, MAKELPARAM(command.val1, command.val2));
+			}
+		}
+		else if (command.type == (int16_t) InputCommandType::INPUT_COMMAND_KEYBOARD) {
+			// Update Keyboard state in KeyboardShadowManager
+
+		}
+		//if (ORIGINAL_WND_PROC != nullptr) {
+		//	ORIGINAL_WND_PROC(wnd, WM_MOUSEMOVE, 0, MAKELPARAM(0, 0));
+		//	Sleep(1000);
+		//	ORIGINAL_WND_PROC(wnd, WM_MOUSEMOVE, 0, MAKELPARAM(1000, 1000));
+		//}
+		//else {
+		//	Sleep(1000);
+		//}
 	}
 }
 
@@ -59,3 +104,8 @@ BOOL CALLBACK InputPipeline::GetWindowCallback(HWND wnd, LPARAM currProc)
 	}
 	return true;
 }
+
+int InputPipeline::NextCommand(InputCommand& nextCommand)
+{
+	return _server.Receive(reinterpret_cast<char *>(&nextCommand), sizeof(InputCommand));
+};

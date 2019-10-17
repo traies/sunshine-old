@@ -83,6 +83,7 @@ public:
 			LOG(ERROR) << "GetProcAddress for GetFocus failed";
 			return false;
 		}
+		this->InstallHook("GetFocus", getFocus, HookGetFocus);
 
 		auto setFocus = (GETFOCUSTYPE)GetProcAddress(hMod, "SetFocus");
 		if (setFocus == nullptr) {

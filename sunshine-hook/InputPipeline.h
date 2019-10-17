@@ -2,14 +2,19 @@
 #include "UDPServer.h"
 #include "WndProcHook.h"
 #include "FocusHook.h"
+#include "ControlHook.h"
+#include "InputCommand.h"
 
 class InputPipeline
 {
 public:
-	InputPipeline() : server(1235), wnd(GetWindowForThisProc()), wndProcHook(wnd)
+	InputPipeline() : _server("1235"), wnd(GetWindowForThisProc()), wndProcHook(wnd)
 	{
 		FocusHook fhook(wnd);
 		auto b = fhook.Install();
+
+		ControlHook chook;
+		chook.Install();
 	}
 	~InputPipeline() {};
 	void Run();
@@ -18,9 +23,9 @@ private:
 	static int validHwndCount;
 	HWND wnd;
 	HWND GetWindowForThisProc();
-	UDPServer server;
+	UDPServer _server;
 	WndProcHook wndProcHook;
 	static BOOL CALLBACK GetWindowCallback(HWND wnd, LPARAM currProc);
-	
+	int NextCommand(InputCommand& nextCommand);
 };
 

@@ -10,6 +10,7 @@
 #include "NvidiaEncoder.h"
 #include "FocusHook.h"
 #include "Encoder.h"
+#include "ControlHook.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 
@@ -27,14 +28,10 @@ void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	LOG(INFO) << _startupInfo->videoIP;
 	LOG(INFO) << _startupInfo->encoderAPI;
 	socket = InitSocket();
-	/*if (!InitOutputPipe()) {
-		LOG(ERROR) << "InitOutputPipe failed.";
-		return;
-	}*/
 	InstallHookD9();
 	InstallHookD11();
 	//InstallHookOpenGL();
-	//InitInputPipeline();
+	InitInputPipeline();
 	
 	return;
 }

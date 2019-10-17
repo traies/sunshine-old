@@ -45,7 +45,7 @@ bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 	context->Release();
 	std::vector<std::vector<uint8_t>> vPacket;
 	encoder->EncodeFrame(vPacket);
-	LOG(INFO) << "Encoding..." << vPacket[0].size();
+	//LOG(INFO) << "Encoding..." << vPacket[0].size();
 	queue.push(vPacket);
 	return true;
 }
