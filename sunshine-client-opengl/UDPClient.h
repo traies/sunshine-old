@@ -12,20 +12,15 @@ public:
 	UDPClient(const std::string& host, const unsigned int port);
 	~UDPClient();
 	void Stop();
-	void send(void * msg, int size);
-	void send(boost::asio::streambuf& buf);
+	size_t send(void * msg, int size);
 
 private:
 	bool stop = false;
 	std::thread io_service_thread;
 	std::unique_ptr<boost::asio::io_service> io_service;
-	std::unique_ptr<udp::socket> socket;
+	std::unique_ptr<tcp::socket> socket;
 	std::unique_ptr<boost::asio::io_service::work> work;	// While this exists, the service will keep on running.
-	udp::endpoint destination;
-
-	void WriteHandler(
-		const boost::system::error_code& ec,
-		std::size_t bytes_transferred);
+	tcp::endpoint destination;
 
 };
 

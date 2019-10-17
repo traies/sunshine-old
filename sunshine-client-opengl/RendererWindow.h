@@ -1,7 +1,11 @@
 #pragma once
+#include "UDPClient.h"
 #include <stdexcept>
 #include <GLFW\glfw3.h>
 #include "MpvWrapper.h"
+#include "InputCommand.h"
+#include <queue>
+#include <thread>
 
 class RendererWindow
 {
@@ -15,7 +19,12 @@ private:
 
 	static void WindowCloseCallback(GLFWwindow * window);
 	static void KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods);
+	static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+	static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 	void CloseAndExit(int code);
+	void EnqueCommand(const InputCommand& command);
+
+	std::queue<InputCommand> commands;
 public:
 	RendererWindow(int width, int height, const char * title, const char * ip, const char * port) :
 		width(width), height(height), title(title) 
@@ -35,6 +44,8 @@ public:
 		//	Setting up callbacks
 		glfwSetWindowCloseCallback(window, &WindowCloseCallback);
 		glfwSetKeyCallback(window, &KeyCallback);
+		glfwSetCursorPosCallback(window, &CursorPosCallback);
+		glfwSetMouseButtonCallback(window, &MouseButtonCallback);
 
 		//	Disable Vsync
 		glfwSwapInterval(0);
@@ -57,11 +68,34 @@ public:
 		//	Send loadfile command
 
 		std::stringstream ipStream;
-		ipStream << "tcp://" << ip << ":" << port;
+		ipStream << "tcp://" << ip << ":" << port << "?listen";
 		
 
 		mpv->Command("loadfile", { ipStream.str().c_str() });
 
+		//	Send input commands on this thread.
+		std::thread thread([&] {
+			//	Start Controller UDPClient
+			UDPClient client("127.0.0.1", 1235);
+			while (true) {
+				if (!commands.empty()) {
+					InputCommand command = commands.front();
+					commands.pop();
+					int sent = client.send(&command, sizeof(InputCommand));
+					if (sent > 0) {
+					}
+					else {
+						LOG(ERROR) << "STOPPED SENDING.";
+						break;
+					}
+				}
+				else {
+					Sleep(5);
+				}
+			}
+			});
+
+		thread.detach();
 	};
 
 	~RendererWindow() 
