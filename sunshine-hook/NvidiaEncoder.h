@@ -8,6 +8,7 @@
 #include <NvEncoder\NvEncoderD3D9.h>
 #include <NvEncoder\NvEncoderD3D11.h>
 #include <queue>
+#include <mutex>
 
 namespace Encode {
 	class NvidiaEncoder : public Encoder
@@ -49,11 +50,13 @@ namespace Encode {
 		HDC * hdc = nullptr;
 		std::unique_ptr<NvEncoder> encoder;
 		std::queue <std::vector<std::vector<uint8_t>>> queue;
-		std::mutex m;
+		std::queue <ID3D11Texture2D*> textureQueue;
 		bool InitEncoder(IDirect3DSurface9 * frame);
 		bool InitEncoder(ID3D11Texture2D * frame);
 		bool encoderInit = false;
 		bool f = false;
+		int frames = 0;
+		std::mutex frameLock;
 	};
 }
 

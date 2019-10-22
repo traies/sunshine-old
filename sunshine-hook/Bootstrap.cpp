@@ -30,14 +30,13 @@ void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	socket = InitSocket();
 	InstallHookD9();
 	InstallHookD11();
-	//InstallHookOpenGL();
+	InstallHookOpenGL();
 	InitInputPipeline();
-	
 	return;
 }
 
 void Bootstrap::InitLogger() {
-	//	Install MessageQueueDispatcher
+	////	Install MessageQueueDispatcher
 	el::Helpers::installLogDispatchCallback<MessageQueueDispatcher>("MessageQueueDispatcher");
 	MessageQueueDispatcher * mqd = el::Helpers::logDispatchCallback<MessageQueueDispatcher>("MessageQueueDispatcher");
 	mqd->SetMessageQueue(DEFAULT_FIFO_DEBUG);

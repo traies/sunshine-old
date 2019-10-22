@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "..\easyloggingpp\easylogging++.h"
 #include <thread>
+#include <map>
 
 #define MAX_REHOOKS			20
 #define REHOOK_TIMEOUT		100
@@ -10,8 +11,8 @@
 	the game that it has lost focus. This allows us to keep sending 
 	inputs to the game even if minimized.
 */
-extern WNDPROC ORIGINAL_WND_PROC;
-static bool STARTED;
+LRESULT ORIGINAL_WND_PROC(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+void ADD_WND_PROC(HWND hWnd, WNDPROC);
 class WndProcHook {
 
 private:
@@ -22,13 +23,7 @@ private:
 		case WM_ACTIVATE:
 			if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE) {
 				LOG(INFO) << "Window activated.";
-
-				// Window should be activated only once
-				if (!STARTED) {
-					return 0;
-				}
-				STARTED = true;
-				break;
+				return 0;
 			}
 			else {
 				LOG(INFO) << "Window inactivated  55.";
@@ -37,54 +32,57 @@ private:
 			}
 			break;
 		case WM_KILLFOCUS:
+			LOG(INFO) << "Kill focus";
 			return 0;
 		case WM_SETFOCUS:
+			LOG(INFO) << "Set focus";
 			return 0;
 		case WM_MOUSEMOVE:
 		case WM_MOUSEHOVER:
 		case WM_MOUSELEAVE:
-		//case WM_NCMOUSEMOVE:
+		case WM_MOUSEWHEEL:
 			return 0;
 		case WM_INPUT:
+		case WM_INPUT_DEVICE_CHANGE:
+		case WM_CAPTURECHANGED:
 			return 0;
-		case WM_CHAR:
-		case WM_KEYDOWN:
-		case WM_KEYUP:
-			return 0;
-		//case WM_APPCOMMAND:
+		//case WM_CHAR:
+		//case WM_KEYDOWN:
+		//case WM_KEYUP:
 		//	return 0;
-			//break;
+		case WM_APPCOMMAND:
+			return 0;
 		}
-		return CallWindowProc(ORIGINAL_WND_PROC, hWnd, message, wParam, lParam);
+		//return 0;
+		return ORIGINAL_WND_PROC(hWnd, message, wParam, lParam);
 	}
 public:
 	void InstallHook();
-	WndProcHook(HWND window) : window(window)
+
+	void Install(HWND window)
 	{
-		Sleep(REHOOK_TIMEOUT);
-		ShowWindow(window, SW_HIDE);
-		ORIGINAL_WND_PROC = (WNDPROC)SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)&TempWndProc);
-		if (ORIGINAL_WND_PROC == nullptr) {
-			DWORD dw = GetLastError();
-			LPVOID lpMsgBuf;
-			FormatMessage(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER |
-				FORMAT_MESSAGE_FROM_SYSTEM |
-				FORMAT_MESSAGE_IGNORE_INSERTS,
-				NULL,
-				dw,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPTSTR)&lpMsgBuf,
-				0, NULL);
-			LOG(ERROR) << "Could not SetWindowLongPtr. " << lpMsgBuf;
-		}
-		LOG(INFO) << "Old Proc " << ORIGINAL_WND_PROC;
-		Sleep(REHOOK_TIMEOUT);
+		LOG(INFO) << "WND HOOK";
 		for (int i=0; i < MAX_REHOOKS; i++) {
 			auto temp = (WNDPROC)SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)&TempWndProc);
-			if (temp != 0 && temp != &TempWndProc) {
-				ORIGINAL_WND_PROC = temp;
-				LOG(INFO) << "Changed oldProc ";
+			if (temp == nullptr) {
+				DWORD dw = GetLastError();
+				LPVOID lpMsgBuf;
+				FormatMessage(
+					FORMAT_MESSAGE_ALLOCATE_BUFFER |
+					FORMAT_MESSAGE_FROM_SYSTEM |
+					FORMAT_MESSAGE_IGNORE_INSERTS,
+					NULL,
+					dw,
+					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					(LPTSTR)&lpMsgBuf,
+					0, NULL);
+				LOG(ERROR) << "Could not SetWindowLongPtr. " << lpMsgBuf;
+			}
+			else if (temp != &TempWndProc) {
+				ADD_WND_PROC(window, temp);
+				LOG(INFO) << "Old Proc " << temp;
+				ORIGINAL_WND_PROC(window, WM_ACTIVATE, WA_ACTIVE, 0);
+				//ShowWindow(window, SW_HIDE);
 			}
 			else if (temp == 0) {
 				LOG(ERROR) << "Could not SetWindowLongPtr. " << GetLastError();
@@ -92,8 +90,6 @@ public:
 			}
 			Sleep(REHOOK_TIMEOUT);
 		};
-
-		
 	};
 	~WndProcHook() {};
 };

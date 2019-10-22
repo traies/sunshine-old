@@ -45,9 +45,6 @@
     <ClInclude Include="UDPClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExitProcessHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InputPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -100,6 +97,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InputCommand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseShadowController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -155,9 +155,6 @@
     <ClCompile Include="EncodePipeline.cpp">
       <Filter>Source Files\Encode</Filter>
     </ClCompile>
-    <ClCompile Include="ExitProcessHook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InputPipeline.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
@@ -177,6 +174,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InputCommand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseShadowController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

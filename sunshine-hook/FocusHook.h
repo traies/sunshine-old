@@ -10,13 +10,13 @@ typedef bool (STDMETHODCALLTYPE * CLIPCURSOR)(RECT * rect);
 static HWND staticWindow;
 static HWND WINAPI HookGetFocus()
 {
-	LOG(INFO) << "calling get focus...";
+	//LOG(INFO) << "calling get focus..." << staticWindow;
 	return staticWindow;
 }
 
 static HWND WINAPI HookSetFocus(HWND wnd)
 {
-	LOG(INFO) << "calling set focus...";
+	//LOG(INFO) << "calling set focus...";
 	return staticWindow;
 }
 
@@ -47,7 +47,7 @@ static bool WINAPI HookSetCursorPos(int x, int y)
 
 static bool WINAPI HookClipCursor(RECT * rect)
 {
-	//LOG(INFO) << "setting clip pos.";
+	//LOG(INFO) << "setting clip cursor.";
 	return true;
 }
 
@@ -62,7 +62,7 @@ static bool WINAPI HookSetActiveWindow(HWND wnd)
 class FocusHook: public Hook
 {
 public:
-	FocusHook(HWND window)
+	void SetWindow(HWND window)
 	{
 		staticWindow = window;
 	};

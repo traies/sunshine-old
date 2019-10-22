@@ -35,9 +35,6 @@ namespace Encode {
 						}
 					}
 				}
-				else {
-					Sleep(2);
-				}
 			}
 		}
 	};

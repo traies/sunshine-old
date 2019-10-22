@@ -235,7 +235,6 @@
     <ClInclude Include="D9Hook.h" />
     <ClInclude Include="EncodePipeline.h" />
     <ClInclude Include="Encoder.h" />
-    <ClInclude Include="ExitProcessHook.h" />
     <ClInclude Include="FocusHook.h" />
     <ClInclude Include="GLEncodePipeline.h" />
     <ClInclude Include="GLHook.h" />
@@ -244,6 +243,7 @@
     <ClInclude Include="InputCommand.h" />
     <ClInclude Include="InputPipeline.h" />
     <ClInclude Include="MessageQueueDispatcher.h" />
+    <ClInclude Include="MouseShadowController.h" />
     <ClInclude Include="NvidiaEncoder.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -270,7 +270,6 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EncodePipeline.cpp" />
     <ClCompile Include="Encoder.cpp" />
-    <ClCompile Include="ExitProcessHook.cpp" />
     <ClCompile Include="GLEncodePipeline.cpp" />
     <ClCompile Include="GLHook.cpp" />
     <ClCompile Include="GraphicHook.cpp" />
@@ -285,6 +284,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Thimbleweed Park|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="MouseShadowController.cpp" />
     <ClCompile Include="NvidiaEncoder.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
