@@ -2,6 +2,39 @@
 #include "RendererWindow.h"
 #include "..\easyloggingpp\easylogging++.h"
 
+ButtonEventType GLFWActionToButtonEvent(int action)
+{
+	if (action == GLFW_PRESS) {
+		return ButtonEventType::BUTTON_EVENT_DOWN;
+	}
+	if (action == GLFW_RELEASE) {
+		return ButtonEventType::BUTTON_EVENT_UP;
+	}
+	return ButtonEventType::BUTTON_EVENT_NONE;
+}
+
+
+MouseButton GLFWMouseButton(int button)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		return MouseButton::MOUSE_BUTTON_LEFT;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		return MouseButton::MOUSE_BUTTON_RIGHT;
+	}
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+		return MouseButton::MOUSE_BUTTON_MIDDLE;
+	}
+	if (button == GLFW_MOUSE_BUTTON_4) {
+		return MouseButton::MOUSE_BUTTON_4;
+	}
+	if (button == GLFW_MOUSE_BUTTON_5) {
+		return MouseButton::MOUSE_BUTTON_5;
+	}
+	return MouseButton::MOUSE_BUTTON_LEFT;
+}
+
+
 void RendererWindow::WindowCloseCallback(GLFWwindow * window)
 {
 	LOG(INFO) << "Window closing...";
@@ -11,14 +44,30 @@ void RendererWindow::WindowCloseCallback(GLFWwindow * window)
 
 void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
-	LOG(INFO) << "Key: " << key << ". Scancode: " << scancode << ". Action: " << action << ". Mods: " << mods;
+	auto renderWindow = (RendererWindow*)glfwGetWindowUserPointer(window);
+	InputCommand mouseCommand;
+	ZeroMemory(&mouseCommand, sizeof(mouseCommand));
+	MakeKeyboardCommand(mouseCommand, key, scancode, GLFWActionToButtonEvent(action));
+	renderWindow->EnqueCommand(mouseCommand);
+}
+
+void RendererWindow::NormalizeScreenPoint(GLFWwindow* window, double xpos, double ypos, double& xout, double& yout)
+{
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+
+	xout = xpos * 1280 / width;
+	yout = ypos * 720 / height;
 }
 
 void RendererWindow::CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	auto renderWindow = (RendererWindow *) glfwGetWindowUserPointer(window);
 	InputCommand mouseCommand;
-	MakeMouseCommand(mouseCommand, xpos, ypos, ButtonEventType::BUTTON_EVENT_NONE, ButtonEventType::BUTTON_EVENT_NONE);
+	ZeroMemory(&mouseCommand, sizeof(mouseCommand));
+	double xnor, ynor;
+	NormalizeScreenPoint(window, xpos, ypos, xnor, ynor);
+	MakeMouseCommand(mouseCommand, xnor, ynor, MouseButton::MOUSE_BUTTON_LEFT, ButtonEventType::BUTTON_EVENT_NONE);
 	renderWindow->EnqueCommand(mouseCommand);
 }
 
@@ -27,30 +76,24 @@ void RendererWindow::MouseButtonCallback(GLFWwindow* window, int button, int act
 	auto renderWindow = (RendererWindow*)glfwGetWindowUserPointer(window);
 	InputCommand mouseCommand;
 	ZeroMemory(&mouseCommand, sizeof(mouseCommand));
-	double x, y;
+	double x, y, xnor, ynor;
 	glfwGetCursorPos(window, &x, &y);
-	mouseCommand.val1 = x;
-	mouseCommand.val2 = y;
-	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-		if (action == GLFW_PRESS) {
-			mouseCommand.event1 = (int16_t)ButtonEventType::BUTTON_EVENT_DOWN;
-		}
-		else {
-			mouseCommand.event1 = (int16_t)ButtonEventType::BUTTON_EVENT_UP;
-		}
-	}
-	else {
-		if (action == GLFW_PRESS) {
-			mouseCommand.event2 = (int16_t)ButtonEventType::BUTTON_EVENT_DOWN;
-		}
-		else {
-			mouseCommand.event2 = (int16_t)ButtonEventType::BUTTON_EVENT_UP;
-		}
-	}
-
+	NormalizeScreenPoint(window, x, y, xnor, ynor);
+	MakeMouseCommand(mouseCommand, xnor, ynor, GLFWMouseButton(button), GLFWActionToButtonEvent(action));
 	renderWindow->commands.push(mouseCommand);
 }
 
+void RendererWindow::MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	auto renderWindow = (RendererWindow*)glfwGetWindowUserPointer(window);
+	InputCommand mouseCommand;
+	ZeroMemory(&mouseCommand, sizeof(mouseCommand));
+	double x, y, xnor, ynor;
+	glfwGetCursorPos(window, &x, &y);
+	NormalizeScreenPoint(window, x, y, xnor, ynor);
+	MakeScrollCommand(mouseCommand, x, y, yoffset);
+	renderWindow->commands.push(mouseCommand);
+}
 void RendererWindow::CloseAndExit(int code)
 {
 	exit = true;

@@ -8,8 +8,8 @@
 class MpvWrapper
 {
 private:
-	mpv_handle * mpv;
-	mpv_render_context * renderContext;
+	mpv_handle * mpv = nullptr;
+	mpv_render_context * renderContext = nullptr;
 	static void * GetProcAddressMpv(void * fn_ctx, const char * name);
 	static void RedrawCallback(void * ctx);
 public:

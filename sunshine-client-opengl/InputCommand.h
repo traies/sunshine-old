@@ -15,6 +15,16 @@ enum class ButtonEventType
 	BUTTON_EVENT_DOWN,
 };
 
+enum class MouseButton
+{
+	MOUSE_BUTTON_LEFT,
+	MOUSE_BUTTON_RIGHT,
+	MOUSE_BUTTON_MIDDLE,
+	MOUSE_BUTTON_4,
+	MOUSE_BUTTON_5,
+	MOUSE_SCROLL,
+};
+
 struct InputCommand
 {
 	int16_t type;
@@ -22,5 +32,6 @@ struct InputCommand
 	int16_t event1, event2;
 };
 
-void MakeMouseCommand(InputCommand& command, int16_t x, int16_t y, ButtonEventType mouse1, ButtonEventType mouse2);
-void MakeKeyboardCommand(InputCommand& command, int16_t key, ButtonEventType ev);
+void MakeMouseCommand(InputCommand& command, int16_t x, int16_t y, MouseButton mouseButton, ButtonEventType mouseEvent);
+void MakeKeyboardCommand(InputCommand& command, int16_t key, int16_t scancode, ButtonEventType ev);
+void MakeScrollCommand(InputCommand& command, double x, double y, double yoffset);
