@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RendererWindow.h"
 #include "..\easyloggingpp\easylogging++.h"
+#include <chrono>
 
 ButtonEventType GLFWActionToButtonEvent(int action)
 {
@@ -45,10 +46,22 @@ void RendererWindow::WindowCloseCallback(GLFWwindow * window)
 void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
 	auto renderWindow = (RendererWindow*)glfwGetWindowUserPointer(window);
-	InputCommand mouseCommand;
-	ZeroMemory(&mouseCommand, sizeof(mouseCommand));
-	MakeKeyboardCommand(mouseCommand, key, scancode, GLFWActionToButtonEvent(action));
-	renderWindow->EnqueCommand(mouseCommand);
+	if (key == GLFW_KEY_P && action == GLFW_PRESS && mods & (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT) == mods) {
+		if (!renderWindow->captureMouse) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+		else {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		renderWindow->captureMouse = !renderWindow->captureMouse;
+	}
+	else {
+		InputCommand mouseCommand;
+		ZeroMemory(&mouseCommand, sizeof(mouseCommand));
+		MakeKeyboardCommand(mouseCommand, key, scancode, GLFWActionToButtonEvent(action));
+		renderWindow->EnqueCommand(mouseCommand);
+	}
+
 }
 
 void RendererWindow::NormalizeScreenPoint(GLFWwindow* window, double xpos, double ypos, double& xout, double& yout)
@@ -56,19 +69,24 @@ void RendererWindow::NormalizeScreenPoint(GLFWwindow* window, double xpos, doubl
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 
-	xout = xpos * 1280 / width;
-	yout = ypos * 720 / height;
+	xout = xpos * 1920 / width;
+	yout = ypos * 1080 / height;
 }
 
 void RendererWindow::CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	auto renderWindow = (RendererWindow *) glfwGetWindowUserPointer(window);
-	InputCommand mouseCommand;
-	ZeroMemory(&mouseCommand, sizeof(mouseCommand));
-	double xnor, ynor;
-	NormalizeScreenPoint(window, xpos, ypos, xnor, ynor);
-	MakeMouseCommand(mouseCommand, xnor, ynor, MouseButton::MOUSE_BUTTON_LEFT, ButtonEventType::BUTTON_EVENT_NONE);
-	renderWindow->EnqueCommand(mouseCommand);
+	auto curr = std::chrono::system_clock::now();
+	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(curr - renderWindow->lastMouseTime).count();
+	if (diff > 10) {
+		renderWindow->lastMouseTime = curr;
+		InputCommand mouseCommand;
+		ZeroMemory(&mouseCommand, sizeof(mouseCommand));
+		double xnor, ynor;
+		NormalizeScreenPoint(window, xpos, ypos, xnor, ynor);
+		MakeMouseCommand(mouseCommand, xnor, ynor, MouseButton::MOUSE_BUTTON_LEFT, ButtonEventType::BUTTON_EVENT_NONE);
+		renderWindow->EnqueCommand(mouseCommand);
+	}
 }
 
 void RendererWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)

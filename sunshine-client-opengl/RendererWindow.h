@@ -27,7 +27,9 @@ private:
 	void EnqueCommand(const InputCommand& command);
 
 	std::queue<InputCommand> commands;
+	bool captureMouse = false;
 public:
+	std::chrono::time_point<std::chrono::system_clock> lastMouseTime;
 	RendererWindow(int width, int height, const char * title, const char * ip, const char * port) :
 		width(width), height(height), title(title) 
 	{
@@ -36,6 +38,7 @@ public:
 		if (window == nullptr) {
 			throw std::runtime_error("Could not create window");
 		}
+		lastMouseTime = std::chrono::system_clock::now();
 
 		//	Setting up context
 		glfwMakeContextCurrent(window);
@@ -49,7 +52,6 @@ public:
 		glfwSetCursorPosCallback(window, &CursorPosCallback);
 		glfwSetMouseButtonCallback(window, &MouseButtonCallback);
 		glfwSetScrollCallback(window, &MouseScrollCallback);
-		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		//	Disable Vsync
 		glfwSwapInterval(0);
