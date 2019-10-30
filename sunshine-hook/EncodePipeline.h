@@ -26,14 +26,20 @@ namespace Encode {
 		std::thread encodeThread;
 		void Encode()
 		{
+			std::vector<std::vector<uint8_t>> buffer(1);
 			while (true) {
-				auto buffer = encoder->PullBuffer();
-				if (!buffer.empty()) {
-					for (std::vector<uint8_t> b : buffer) {
-						if (b.size() > 0) {
-							socket->send(b.data(), b.size());
+				buffer.clear();
+				if (encoder->PullBuffer(buffer)) {
+					if (!buffer.empty()) {
+						for (std::vector<uint8_t> b : buffer) {
+							if (b.size() > 0) {
+								socket->send(b.data(), b.size());
+							}
 						}
 					}
+				}
+				else {
+					Sleep(5);
 				}
 			}
 		}

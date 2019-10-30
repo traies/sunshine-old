@@ -10,27 +10,26 @@ class InputPipeline
 public:
 	InputPipeline() : _server("1235")
 	{
-		wnd = GetWindowForThisProc();
 		fhook = std::make_unique<FocusHook>();
-		fhook->SetWindow(wnd);
 		auto b = fhook->Install();
-		
 		wndProcHook = std::make_unique<WndProcHook>();
-		wndProcHook->Install(wnd);
+		wndProcHook->Install();
 
 		std::thread updateWindow([&] {
 			while (true) {
-				auto newWnd = GetWindowForThisProc();
-				if (newWnd != wnd) {
+				windowsCount = GetWindowForThisProc(windows, 100);
+				if (windowsCount > 0) {
+					fhook->SetForegroundWindow(windows[0]);
+					fhook->SetActiveWindow(windows[0]);
+					fhook->SetFocusWindow(windows[0]);
 					LOG(INFO) << "Changing window...";
-					wnd = newWnd;
-					fhook->SetWindow(newWnd);
-					wndProcHook->Install(newWnd);
+					for (int i = 0; i < windowsCount; i++) {
+						wndProcHook->Install(windows[i]);
+					}
 				}
-				Sleep(1000);
+				Sleep(10000);
 			}
 		});
-
 		updateWindow.detach();
 
 		ControlHook chook;
@@ -45,8 +44,9 @@ private:
 	static int validHwndCount;
 	std::unique_ptr<FocusHook> fhook;
 	std::unique_ptr<WndProcHook> wndProcHook;
-	HWND wnd;
-	HWND GetWindowForThisProc();
+	HWND windows[100];
+	int windowsCount = 0;
+	int GetWindowForThisProc(HWND* windows, size_t maxSize);
 	UDPServer _server;
 	static BOOL CALLBACK GetWindowCallback(HWND wnd, LPARAM currProc);
 	int NextCommand(InputCommand& nextCommand);

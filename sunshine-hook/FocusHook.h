@@ -7,36 +7,49 @@ typedef HWND (STDMETHODCALLTYPE * SETFOCUSTYPE)(HWND wnd);
 typedef bool (STDMETHODCALLTYPE * SETFOREGROUNDTYPE)(HWND wnd);
 typedef bool (STDMETHODCALLTYPE * SETCURSORPOS)(int x, int y);
 typedef bool (STDMETHODCALLTYPE * CLIPCURSOR)(RECT * rect);
-static HWND staticWindow;
+static HWND activeWindow = nullptr;
+static HWND foregroundWindow = nullptr;
+static HWND focusWindow = nullptr;
+
 static HWND WINAPI HookGetFocus()
 {
-	//LOG(INFO) << "calling get focus..." << staticWindow;
-	return staticWindow;
+	//LOG(INFO) << "calling get focus..." << focusWindow;
+	return focusWindow;
 }
 
 static HWND WINAPI HookSetFocus(HWND wnd)
 {
 	//LOG(INFO) << "calling set focus...";
-	return staticWindow;
+	focusWindow = wnd;
+	return focusWindow;
 }
 
 
 static HWND WINAPI HookGetForegroundWindow()
 {
-	//LOG(INFO) << "calling get foreground window..." << staticWindow;
-	return staticWindow;
+	//LOG(INFO) << "calling get foreground window..." << foregroundWindow;
+	return focusWindow;
 }
 
 static bool WINAPI HookSetForegroundWindow(HWND wnd)
 {
 	//LOG(INFO) << "calling set foreground window...";
-	return false;
+	foregroundWindow = wnd;
+	return true;
 }
 
 static HWND WINAPI HookGetActiveWindow()
 {
-	//LOG(INFO) << "calling get active window..." << staticWindow;
-	return staticWindow;
+	//LOG(INFO) << "calling get active window..." << activeWindow;
+	return focusWindow;
+}
+
+
+static bool WINAPI HookSetActiveWindow(HWND wnd)
+{
+	//LOG(INFO) << "calling set active window...";
+	activeWindow = wnd;
+	return true;
 }
 
 static bool WINAPI HookSetCursorPos(int x, int y)
@@ -51,21 +64,20 @@ static bool WINAPI HookClipCursor(RECT * rect)
 	return true;
 }
 
-
-static bool WINAPI HookSetActiveWindow(HWND wnd)
-{
-	//LOG(INFO) << "calling set active window...";
-	return true;
-}
-
-
 class FocusHook: public Hook
 {
 public:
-	void SetWindow(HWND window)
-	{
-		staticWindow = window;
-	};
+	void SetForegroundWindow(HWND wnd) {
+		foregroundWindow = wnd;
+	}
+
+	void SetActiveWindow(HWND wnd) {
+		activeWindow = wnd;
+	}
+
+	void SetFocusWindow(HWND wnd) {
+		focusWindow = wnd;
+	}
 
 	bool Install()
 	{
@@ -142,7 +154,7 @@ public:
 		}
 		this->InstallHook("ClipCursor", clipCursor, HookClipCursor);
 
-		return this->InstallHook("GetFocus", getFocus, HookGetFocus);
+		return true;
 	};
 
 	bool Uninstall() 

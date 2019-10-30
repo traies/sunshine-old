@@ -19,11 +19,15 @@ bool NvidiaEncoder::PutFrame(IDirect3DSurface9 * frame)
 			return true;
 		}
 	}
-	auto surf = reinterpret_cast<IDirect3DSurface9 *>(encoder->GetNextInputFrame()->inputPtr);
-	D3DXLoadSurfaceFromSurface(surf, nullptr, nullptr, frame, nullptr, nullptr, D3DX_DEFAULT, 0);
-	std::vector<std::vector<uint8_t>> vPacket;
-	encoder->EncodeFrame(vPacket);
-	queue.push(vPacket);
+	if (queue.size() < 2) {
+		frameLock.lock();
+		auto surf = reinterpret_cast<IDirect3DSurface9 *>(encoder->GetNextInputFrame()->inputPtr);
+		D3DXLoadSurfaceFromSurface(surf, nullptr, nullptr, frame, nullptr, nullptr, D3DX_DEFAULT, 0);
+		std::vector<std::vector<uint8_t>> vPacket;
+		encoder->EncodeFrame(vPacket);
+		queue.push(vPacket);
+		frameLock.unlock();
+	}
 	return true;
 }
 
@@ -39,15 +43,28 @@ bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 		}
 	}
 
-	auto surf = reinterpret_cast<ID3D11Texture2D *>(encoder->GetNextInputFrame()->inputPtr);
-	ID3D11DeviceContext * context;
-	d3d11device->GetImmediateContext(&context);
-	context->CopyResource(surf, frame);
-	context->Release();
-	std::vector<std::vector<uint8_t>> vPacket;
-	encoder->EncodeFrame(vPacket);
-	//LOG(INFO) << "Encoding..." << vPacket[0].size();
-	queue.push(vPacket);
+
+	if (queue.size() < 2) {
+		frameLock.lock();
+		ID3D11DeviceContext* context;
+		d3d11device->GetImmediateContext(&context);
+		auto surf = reinterpret_cast<ID3D11Texture2D*>(encoder->GetNextInputFrame()->inputPtr);
+		context->CopyResource(surf, frame);
+		std::vector<std::vector<uint8_t>> buffer;
+		encoder->EncodeFrame(buffer);
+		queue.push(buffer);
+		frameLock.unlock();
+	}
+
+	/*if (!hasFrame) {
+		ID3D11DeviceContext* context;
+		d3d11device1->GetImmediateContext(&context);
+		context->CopyResource(auxFrame, frame);
+		context->Flush();
+		context->Release();
+		hasFrame = true;
+	}*/
+
 	return true;
 }
 
@@ -56,17 +73,40 @@ bool NvidiaEncoder::PutFrame(GLuint * texture)
 	return false;
 }
 
-std::vector<std::vector<uint8_t>> NvidiaEncoder::PullBuffer()
+bool NvidiaEncoder::PullBuffer(std::vector<std::vector<uint8_t>>& buffer)
 {
+	std::lock_guard<std::mutex> lock(frameLock);
 	if (!queue.empty()) {
-		auto packet = queue.front();
+		buffer = queue.front();
 		queue.pop();
-		return packet;
+		return true;
 	}
-	else {
-		std::vector<std::vector<uint8_t>> packet;
-		return packet;
-	}
+	return false;
+	//bool ret = false;
+	//try {
+	//	if (hasFrame) {
+	//		ID3D11DeviceContext* context;
+	//		d3d11device2->GetImmediateContext(&context);
+
+
+	//		context->CopyResource(surf, auxFrame);
+	//		//context->Flush();
+	//		encoder->EncodeFrame(buffer);
+
+	//		context->Release();
+	//		ret = true;
+	//		hasFrame = false;
+	//	}
+	//	else {
+	//		ret = false;
+	//	}	
+	//}
+	//catch (std::exception& ex) {
+	//	LOG(ERROR) << "Catched something: " << ex.what();
+	//	hasFrame = false;
+	//	ret = false;
+	//}
+	//return ret;
 }
 
 bool NvidiaEncoder::InitEncoder(IDirect3DSurface9 * frame)
@@ -105,7 +145,6 @@ bool NvidiaEncoder::InitEncoder(IDirect3DSurface9 * frame)
 		LOG(ERROR) << ex.what();
 	}
 	
-	
 	return true;
 }
 
@@ -133,18 +172,34 @@ bool NvidiaEncoder::InitEncoder(ID3D11Texture2D * frame)
 
 	NV_ENC_CONFIG encodeConfig = { NV_ENC_CONFIG_VER };
 	initializeParams.encodeConfig = &encodeConfig;
-	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
-	encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
-	encodeConfig.rcParams.averageBitRate = (static_cast<unsigned int>(5.0f * initializeParams.encodeWidth * initializeParams.encodeHeight) / (1920 * 1080)) * 100000;
-	encodeConfig.rcParams.averageBitRate = 150000000;
-	encodeConfig.rcParams.vbvBufferSize = 0; // (encodeConfig.rcParams.averageBitRate * initializeParams.frameRateDen / initializeParams.frameRateNum) * 5;
-	encodeConfig.rcParams.maxBitRate = encodeConfig.rcParams.averageBitRate;
-	encodeConfig.rcParams.vbvInitialDelay = 0; // encodeConfig.rcParams.vbvBufferSize;
+	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID);
+	//encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
+	//encodeConfig.rcParams.averageBitRate = (static_cast<unsigned int>(5.0f * initializeParams.encodeWidth * initializeParams.encodeHeight) / (1920 * 1080)) * 100000;
+	//encodeConfig.rcParams.averageBitRate = 150000000;
+	//encodeConfig.rcParams.vbvBufferSize = 0; // (encodeConfig.rcParams.averageBitRate * initializeParams.frameRateDen / initializeParams.frameRateNum) * 5;
+	//encodeConfig.rcParams.maxBitRate = encodeConfig.rcParams.averageBitRate;
+	//encodeConfig.rcParams.vbvInitialDelay = 0; // encodeConfig.rcParams.vbvBufferSize;
 	try {
 		encoder->CreateEncoder(&initializeParams);
 	}
 	catch (std::exception& ex) {
 		LOG(ERROR) << ex.what();
 	}
+
+	D3D11_TEXTURE2D_DESC destDesc;
+	ZeroMemory(&destDesc, sizeof(destDesc));
+	destDesc.Format = sd.Format;
+	destDesc.Height = sd.Height;
+	destDesc.Width = sd.Width;
+	destDesc.Usage = D3D11_USAGE_DEFAULT;
+	destDesc.CPUAccessFlags = 0;
+	destDesc.BindFlags = 0;
+	destDesc.MipLevels = destDesc.ArraySize = 1;
+	destDesc.SampleDesc.Quality = 0;
+	destDesc.SampleDesc.Count = 1;
+	destDesc.MiscFlags = 0;
+
+	auto res = d3d11device->CreateTexture2D(&destDesc, nullptr, &auxFrame);
+
 	return true;
 }

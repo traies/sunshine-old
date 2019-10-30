@@ -242,6 +242,7 @@
     <ClInclude Include="Hook.h" />
     <ClInclude Include="InputCommand.h" />
     <ClInclude Include="InputPipeline.h" />
+    <ClInclude Include="KeyboardShadowController.h" />
     <ClInclude Include="MessageQueueDispatcher.h" />
     <ClInclude Include="MouseShadowController.h" />
     <ClInclude Include="NvidiaEncoder.h" />
@@ -270,12 +271,14 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EncodePipeline.cpp" />
     <ClCompile Include="Encoder.cpp" />
+    <ClCompile Include="FocusHook.cpp" />
     <ClCompile Include="GLEncodePipeline.cpp" />
     <ClCompile Include="GLHook.cpp" />
     <ClCompile Include="GraphicHook.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="InputCommand.cpp" />
     <ClCompile Include="InputPipeline.cpp" />
+    <ClCompile Include="KeyboardShadowController.cpp" />
     <ClCompile Include="MessageQueueDispatcher.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Thimbleweed Park|Win32'">NotUsing</PrecompiledHeader>

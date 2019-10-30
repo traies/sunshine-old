@@ -14,7 +14,7 @@ namespace Encode {
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;
 		bool PutFrame(GLuint * texture) override;
-		std::vector<std::vector<uint8_t>> PullBuffer() override;
+		bool PullBuffer(std::vector<std::vector<uint8_t>>& buff) override;
 	private:
 		amf::AMFContextPtr context;
 		amf::AMFComponentPtr encoder;

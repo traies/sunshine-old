@@ -30,7 +30,7 @@ void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	socket = InitSocket();
 	InstallHookD9();
 	InstallHookD11();
-	InstallHookOpenGL();
+	//InstallHookOpenGL();
 	InitInputPipeline();
 	return;
 }

@@ -13,7 +13,6 @@
 //#include <dlfcn.h>
 #endif
 #include "NvEncoder.h"
-
 #ifndef _WIN32
 #include <cstring>
 static inline bool operator==(const GUID &guid1, const GUID &guid2) {
@@ -386,7 +385,7 @@ void NvEncoder::EncodeFrame(std::vector<std::vector<uint8_t>> &vPacket, NV_ENC_P
     int i = m_iToSend % m_nEncoderBuffer;
     NV_ENC_MAP_INPUT_RESOURCE mapInputResource = { NV_ENC_MAP_INPUT_RESOURCE_VER };
     mapInputResource.registeredResource = m_vRegisteredResources[i];
-    NVENC_API_CALL(m_nvenc.nvEncMapInputResource(m_hEncoder, &mapInputResource));
+	NVENC_API_CALL(m_nvenc.nvEncMapInputResource(m_hEncoder, &mapInputResource));
     m_vMappedInputBuffers[i] = mapInputResource.mappedResource;
     DoEncode(m_vMappedInputBuffers[i], vPacket, pPicParams);
 }
@@ -435,6 +434,7 @@ void NvEncoder::GetSequenceParams(std::vector<uint8_t> &seqParams)
 void NvEncoder::DoEncode(NV_ENC_INPUT_PTR inputBuffer, std::vector<std::vector<uint8_t>> &vPacket, NV_ENC_PIC_PARAMS *pPicParams)
 {
     NV_ENC_PIC_PARAMS picParams = {};
+
     if (pPicParams)
     {
         picParams = *pPicParams;

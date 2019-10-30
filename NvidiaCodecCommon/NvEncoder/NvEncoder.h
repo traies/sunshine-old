@@ -19,6 +19,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include "../../easyloggingpp/easylogging++.h"
 
 /**
 * @brief Exception class for error reporting from NvEncodeAPI calls.
@@ -51,7 +52,7 @@ inline NVENCException NVENCException::makeNVENCException(const std::string& erro
 
 #define NVENC_THROW_ERROR( errorStr, errorCode )                                                         \
     do                                                                                                   \
-    {                                                                                                    \
+    {																									\
         throw NVENCException::makeNVENCException(errorStr, errorCode, __FUNCTION__, __FILE__, __LINE__); \
     } while (0)
 

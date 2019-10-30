@@ -4,6 +4,7 @@
 #include "WndProcHook.h"
 #include <variant>
 #include "MouseShadowController.h"
+#include "KeyboardShadowController.h"
 
 #define MAX_TRIES	100
 
@@ -16,9 +17,8 @@ void InputPipeline::Run()
 		return;
 	}
 	InputCommand command;
-	bool leftButtonPressed = false;
+	ZeroMemory(&command, sizeof(command));
 	while (true) {
-		ZeroMemory(&command, sizeof(command));
 		int read = NextCommand(command);
 		if (read <= 0) {
 			LOG(ERROR) << "Input socket was closed.";
@@ -26,18 +26,19 @@ void InputPipeline::Run()
 		}
 		if (command.type == (int16_t) InputCommandType::INPUT_COMMAND_MOUSE) {
 			auto controller = MouseShadowController::GetInstance();
-			controller->UpdateState(command, wnd);
+			controller->UpdateState(command, windows, windowsCount);
 		}
 		else if (command.type == (int16_t) InputCommandType::INPUT_COMMAND_KEYBOARD) {
 			// Update Keyboard state in KeyboardShadowManager
-
+			auto controller = KeyboardShadowController::GetInstance();
+			controller->UpdateState(command, windows, windowsCount);
 		}
 	}
 }
 
 HWND InputPipeline::validHwnd[100];
 int InputPipeline::validHwndCount;
-HWND InputPipeline::GetWindowForThisProc()
+int InputPipeline::GetWindowForThisProc(HWND * windows, size_t maxSize)
 {
 	validHwndCount = 0;
 	for (int i = 0; i < MAX_TRIES; i++) {
@@ -47,11 +48,18 @@ HWND InputPipeline::GetWindowForThisProc()
 			LOG(INFO) << "Could not find the process window. Retrying..";
 		}
 		else {
+			int topLevelWnds = validHwndCount;
+			for (int i = 0; i < topLevelWnds; i++) {
+				EnumChildWindows(validHwnd[i], &InputPipeline::GetWindowCallback, (LPARAM)&currProc);
+			}
+
 			break;
 		}
 		Sleep(1000);
 		LOG(INFO) << "Retrying window find..";
 	}
+
+
 	if (validHwndCount == 0) {
 		LOG(ERROR) << "Hooking input failed.";
 		throw std::runtime_error("Could not find a valid window");
@@ -59,13 +67,10 @@ HWND InputPipeline::GetWindowForThisProc()
 	//LOG(INFO) << "Valid Windows were " << validHwndCount;
 
 	for (int i = 0; i < validHwndCount; i++) {
-		if (IsWindowVisible(validHwnd[i])) {
-			//LOG(INFO) << "Last Valid input " << validHwnd[i];
-			return validHwnd[i];
-		}
+		windows[i] = validHwnd[i];
 	}
-	LOG(ERROR) << "Hooking input failed.";
-	throw std::runtime_error("Could not find a valid window");
+	LOG(INFO) << "FOUND " << validHwndCount << " WINDOWS";
+	return validHwndCount;
 }
 
 BOOL CALLBACK InputPipeline::GetWindowCallback(HWND wnd, LPARAM currProc)

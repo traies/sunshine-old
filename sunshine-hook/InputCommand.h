@@ -1,6 +1,21 @@
 #pragma once
 #include "stdafx.h"
 #include <stdint.h>
+#include <Windows.h>
+
+#define DV_INPUT		(WM_APP + 200)
+#define DV_MOUSEMOVE	(DV_INPUT + 1)
+#define DV_KEYUP		(DV_INPUT + 2)
+#define DV_KEYDOWN		(DV_INPUT + 3)
+#define DV_LBUTTONDOWN	(DV_INPUT + 4)
+#define DV_LBUTTONUP	(DV_INPUT + 5)
+#define DV_RBUTTONDOWN	(DV_INPUT + 6)
+#define DV_RBUTTONUP	(DV_INPUT + 7)
+#define DV_MBUTTONDOWN	(DV_INPUT + 8)
+#define DV_MBUTTONUP	(DV_INPUT + 9)
+#define DV_XBUTTONDOWN	(DV_INPUT + 10)
+#define DV_XBUTTONUP	(DV_INPUT + 11)
+#define DV_MOUSEWHEEL	(DV_INPUT + 12)
 
 enum class InputCommandType
 {

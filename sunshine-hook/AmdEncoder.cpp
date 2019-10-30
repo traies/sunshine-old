@@ -288,9 +288,10 @@ bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 			ExitProcess(1);
 		}
 	}
-	D3D11_TEXTURE2D_DESC desc;
-	frame->GetDesc(&desc);
-	auto format = desc.Format;
+	//D3D11_TEXTURE2D_DESC desc;
+	//frame->GetDesc(&desc);
+	//auto format = desc.Format;
+	//LOG(INFO) << "Format: " << format;
 	//	Create offscreen surface.
 	amf::AMFSurfacePtr surfaceamf;
 	{
@@ -362,14 +363,14 @@ bool AmdEncoder::SendSurfaceToEncoder(amf::AMFSurfacePtr surface)
 	{
 		auto res = encoder->SubmitInput(pDuplicated);
 		if (res != AMF_OK) {
-			LOG(ERROR) << "Encoder SubmitInput failed." << res << std::endl;
+			LOG(ERROR) << "Encoder SubmitInput failed." << res;
 			return false;
 		}
 	}
 	return true;
 }
 
-auto AmdEncoder::PullBuffer() -> std::vector<std::vector<uint8_t>>
+bool AmdEncoder::PullBuffer(std::vector<std::vector<uint8_t>>& buff) 
 {
 	amf::AMFData * d;
 	auto res = encoder->QueryOutput(&d);
@@ -377,20 +378,18 @@ auto AmdEncoder::PullBuffer() -> std::vector<std::vector<uint8_t>>
 		//	No more frames are comming.
 		LOG(INFO) << "AMF_EOF: encoder was closed?";
 		std::vector<std::vector<uint8_t>> v;
-		return v;
+		return false;
 	}
 	else if (res == AMF_OK) {
 		amf::AMFBufferPtr buffer(d);
 		auto data = static_cast<uint8_t *>(buffer->GetNative());
 		auto size = static_cast<uint64_t>(buffer->GetSize());
 		std::vector<uint8_t>d (data, data + size);
-		std::vector<std::vector<uint8_t>> v;
-		v.push_back(d);
-		return v;
+		buff.push_back(d);
+		return true;
 	}
 	else {
-		std::vector<std::vector<uint8_t>> v;
-		return v;
+		return false;
 	}
 	
 }
