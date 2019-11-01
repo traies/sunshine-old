@@ -9,7 +9,7 @@
 // 
 // MIT license 
 // 
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2018 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@
  * @brief AMFCompute interface declaration
  ***************************************************************************************************
  */
-#ifndef __AMFCompute_h__
-#define __AMFCompute_h__
+#ifndef AMF_Compute_h
+#define AMF_Compute_h
 #pragma once
 
 #include "Buffer.h"
@@ -60,6 +60,7 @@ namespace amf
         AMF_CHANNEL_ORDER_BGRA          = 3,
         AMF_CHANNEL_ORDER_RGBA          = 4,
         AMF_CHANNEL_ORDER_ARGB          = 5,
+        AMF_CHANNEL_ORDER_YUY2          = 6,
     } AMF_CHANNEL_ORDER;
     //----------------------------------------------------------------------------------------------
     typedef enum AMF_CHANNEL_TYPE
@@ -89,9 +90,9 @@ namespace amf
         AMF_ARGUMENT_ACCESS_READWRITE   = 2,
         AMF_ARGUMENT_ACCESS_READWRITE_MASK  = 0xFFFF,
         //Sampler parameters
-        AMF_ARGUMENT_SAMPLER_POINT         = 0x00000000, // default
         AMF_ARGUMENT_SAMPLER_LINEAR        = 0x10000000, 
         AMF_ARGUMENT_SAMPLER_NORM_COORD    = 0x20000000, 
+        AMF_ARGUMENT_SAMPLER_POINT         = 0x40000000,
         AMF_ARGUMENT_SAMPLER_MASK          = 0xFFFF0000,
     } AMF_ARGUMENT_ACCESS_TYPE;
     //----------------------------------------------------------------------------------------------
@@ -298,4 +299,4 @@ namespace amf
 } // namespace amf
 #endif
 
-#endif // __AMFCompute_h__
+#endif // AMF_Compute_h

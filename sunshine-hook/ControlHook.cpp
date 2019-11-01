@@ -75,21 +75,30 @@ static UINT HookGetRawInputDeviceList(
 	UINT                cbSize
 )
 {
-	RAWINPUTDEVICELIST devices[129];
-	devices[0].dwType = RIM_TYPEMOUSE;
-	devices[0].hDevice = (HANDLE)128;
+	RAWINPUTDEVICELIST devices[256];
 
-	auto controller = KeyboardShadowController::GetInstance();
+	auto keyController = KeyboardShadowController::GetInstance();
+	int keyboardCommands = min(keyController->lastCommand, 128);
+	auto mouseController = MouseShadowController::GetInstance();
+	int mouseCommands = min(mouseController->lastCommand, 128);
 
-	int keyboardCommands = controller->lastCommand % 128;
 	if (!pRawInputDeviceList) {
-		*puiNumDevices = 1 + keyboardCommands;
+		*puiNumDevices = keyboardCommands + mouseCommands;
 	}
 
-	for (int i = 0; i < min(keyboardCommands, *puiNumDevices); i++) {
-		devices[i+1].dwType = RIM_TYPEKEYBOARD;
-		devices[i+1].hDevice = (HANDLE)(keyboardCommands - i);
+	int keyRightIndex = min(keyboardCommands, *puiNumDevices);
+
+	for (int i = 0; i < keyRightIndex; i++) {
+		devices[i].dwType = RIM_TYPEKEYBOARD;
+		devices[i].hDevice = (HANDLE)(i);
 	}
+
+	for (int i = 0; i < min(mouseCommands, *puiNumDevices); i++) {
+		devices[keyRightIndex + i].dwType = RIM_TYPEMOUSE;
+		devices[keyRightIndex + i].hDevice = (HANDLE)(128 + i);
+	}
+
+
 	if (pRawInputDeviceList != nullptr) {
 		LOG(INFO) << "GET RAW INPUT DEVICE LIST NOT NULL";
 		memcpy(pRawInputDeviceList, devices, sizeof(RAWINPUTDEVICELIST) * (*puiNumDevices));
@@ -129,11 +138,11 @@ static BOOL WINAPI HookGetCursorPos(LPPOINT lpPoint)
 	return true;
 }
 
-static void FillMouseRawInputHeader(RAWINPUTHEADER& header, size_t rawInputSize)
+static void FillMouseRawInputHeader(RAWINPUTHEADER& header, size_t rawInputSize, LPARAM handle)
 {
 	header.dwType = RIM_TYPEMOUSE;
 	header.wParam = RIM_INPUT;
-	header.hDevice = (HANDLE)128;
+	header.hDevice = (HANDLE)handle;
 	header.dwSize = rawInputSize;
 }
 
@@ -146,42 +155,13 @@ static void FillKeyRawInputHeader(RAWINPUTHEADER& header, size_t rawInputSize, L
 }
 
 
-static USHORT ButtonFlags()
+inline static void FillMouseRawInput(RAWINPUT& rawInput, RAWMOUSE rawMouse, LPARAM handle)
 {
-	auto controller = MouseShadowController::GetInstance();
-	USHORT buttonFlags = controller->lb ? RI_MOUSE_LEFT_BUTTON_DOWN : RI_MOUSE_LEFT_BUTTON_UP;
-	buttonFlags |= controller->rb ? RI_MOUSE_RIGHT_BUTTON_DOWN : RI_MOUSE_RIGHT_BUTTON_UP;
-	buttonFlags |= controller->mb ? RI_MOUSE_MIDDLE_BUTTON_DOWN : RI_MOUSE_MIDDLE_BUTTON_UP;
-	buttonFlags |= controller->x1b ? RI_MOUSE_BUTTON_4_DOWN : RI_MOUSE_BUTTON_4_UP;
-	buttonFlags |= controller->x2b ? RI_MOUSE_BUTTON_5_DOWN : RI_MOUSE_BUTTON_5_UP;
-	buttonFlags |= RI_MOUSE_WHEEL;
-	return buttonFlags;
+	FillMouseRawInputHeader(rawInput.header, sizeof(RAWINPUT), handle);
+	rawInput.data.mouse = rawMouse;
 }
 
-static void FillMouseRawInput(RAWINPUT& rawInput)
-{
-	FillMouseRawInputHeader(rawInput.header, sizeof(RAWINPUT));
-
-	auto controller = MouseShadowController::GetInstance();
-	// MOUSE POSITION
-	rawInput.data.mouse.lLastX = controller->lastXRelative;
-	rawInput.data.mouse.lLastY = controller->lastYRelative;
-
-	// MOUSE BUTTONS
-	// Could not find information online, assume it is unused
-	rawInput.data.mouse.ulRawButtons = 0;
-
-	rawInput.data.mouse.usButtonFlags = ButtonFlags();
-	rawInput.data.mouse.usButtonData = controller->scrollOffset;
-
-	// MOUSE EXTRA
-	rawInput.data.mouse.ulExtraInformation = 0;
-
-	// MOUSE TYPE OF MOVEMENT
-	rawInput.data.mouse.usFlags = MOUSE_MOVE_RELATIVE;
-}
-
-static void FillKeyRawInput(RAWINPUT& rawInput, InputCommand command, LPARAM handle)
+inline static void FillKeyRawInput(RAWINPUT& rawInput, InputCommand command, LPARAM handle)
 {
 	FillKeyRawInputHeader(rawInput.header, sizeof(RAWINPUT), handle);
 
@@ -210,7 +190,7 @@ static UINT WINAPI HookGetRawInputDeviceInfoW(
 	void * buf;
 	if (uiCommand == RIDI_DEVICENAME) {
 		const char* fakeName;
-		if ((int)hDevice == 128) {
+		if ((int)hDevice >= 128) {
 			fakeName = "FakeMouse";
 		}
 		else {
@@ -222,7 +202,7 @@ static UINT WINAPI HookGetRawInputDeviceInfoW(
 	else if (uiCommand == RIDI_DEVICEINFO) {
 		RID_DEVICE_INFO deviceInfo;
 		ZeroMemory(&deviceInfo, sizeof(deviceInfo));
-		if ((int)hDevice == 128) {
+		if ((int)hDevice >= 128) {
 			deviceInfo.cbSize = sizeof(deviceInfo);
 			deviceInfo.dwType = RIM_TYPEMOUSE;
 			deviceInfo.mouse.dwId = 5;
@@ -287,8 +267,10 @@ static UINT WINAPI HookGetRawInputData(
 		ZeroMemory(&rawInput, sizeof(rawInput));
 		LPARAM handle = (LPARAM) hRawInput;
 		if (pData != nullptr) {
-			if (handle == 128) {
-				FillMouseRawInput(rawInput);
+			if (handle >= 128) {
+				auto controller = MouseShadowController::GetInstance();
+				RAWMOUSE rawMouse = controller->GetRawMouse(hRawInput);
+				FillMouseRawInput(rawInput, rawMouse, handle);
 			}
 			else {
 				auto controller = KeyboardShadowController::GetInstance();
@@ -304,8 +286,8 @@ static UINT WINAPI HookGetRawInputData(
 		RAWINPUTHEADER rawInputHeader;
 		ZeroMemory(&rawInputHeader, sizeof(rawInputHeader));
 		LPARAM handle = (LPARAM)hRawInput;
-		if (handle == 128) {
-			FillMouseRawInputHeader(rawInputHeader, sizeof(RAWINPUT));
+		if (handle >= 128) {
+			FillMouseRawInputHeader(rawInputHeader, sizeof(RAWINPUT), handle);
 		}
 		else {
 			FillKeyRawInputHeader(rawInputHeader, sizeof(RAWINPUT), handle);
@@ -344,7 +326,14 @@ static SHORT HookGetAsyncKeyState(int nVirtKey)
 		return 0x8000;
 	}
 	else {
-		return 0x0000;
+		auto instance = MouseShadowController::GetInstance();
+		auto ev = instance->keys[nVirtKey];
+		if (ev == ButtonEventType::BUTTON_EVENT_DOWN) {
+			return 0x8000;
+		}
+		else {
+			return 0x0000;
+		}
 	}
 }
 
@@ -359,22 +348,24 @@ static UINT HookGetRawInputBuffer(
 	UINT      cbSizeHeader
 )
 {
-	RAWINPUT rawInput[11];
-	ZeroMemory(&rawInput, sizeof(rawInput));
-	FillMouseRawInput(rawInput[0]);
+	//RAWINPUT rawInput[11];
+	//ZeroMemory(&rawInput, sizeof(rawInput));
+	//FillMouseRawInput(rawInput[0]);
 
-	auto controller = KeyboardShadowController::GetInstance();
-	InputCommand command[10];
-	int keyboardCommandsRead = controller->ReadInput(command,10);
-	for (int i = 0; i < keyboardCommandsRead; i++) {
-		FillKeyRawInput(rawInput[1+i], command[i], i + 2);
-	}
-	
-	*pcbSize = sizeof(rawInput) * (1 + keyboardCommandsRead);
-	if (pData != nullptr) {
-		memcpy(pData, &rawInput, *pcbSize);
-	}
-	return *pcbSize;
+	//auto controller = KeyboardShadowController::GetInstance();
+	//InputCommand command[10];
+	//int keyboardCommandsRead = controller->ReadInput(command,10);
+	//for (int i = 0; i < keyboardCommandsRead; i++) {
+	//	FillKeyRawInput(rawInput[1+i], command[i], i + 2);
+	//}
+	//
+	//*pcbSize = sizeof(rawInput) * (1 + keyboardCommandsRead);
+	//if (pData != nullptr) {
+	//	memcpy(pData, &rawInput, *pcbSize);
+	//}
+	//return *pcbSize;
+	LOG(INFO) << "CALLING GET RAW INPUT BUFFER ===> FIX";
+	return 0;
 }
 
 bool ControlHook::Install()

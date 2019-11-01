@@ -219,18 +219,18 @@ private:
 	HWND window;
 
 	static LRESULT CALLBACK TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-		//switch (message) {
-		//case WM_ACTIVATE:
-		//	if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE) {
-		//		LOG(INFO) << "Window activated.";
-		//		return DefWindowProc(hWnd, message, wParam, lParam);
-		//	}
-		//	else {
-		//		LOG(INFO) << "Window inactivated  56.";
-		//		return 0;// DefWindowProc(hWnd, message, wParam, lParam);
-		//	}
-		//	break;
-		//}
+		switch (message) {
+		case WM_ACTIVATE:
+			if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE) {
+				LOG(INFO) << "Window activated.";
+				return ORIGINAL_WND_PROC(hWnd, message, wParam, lParam);
+			}
+			else {
+				LOG(INFO) << "Window inactivated  56.";
+				return 0;// DefWindowProc(hWnd, message, wParam, lParam);
+			}
+			break;
+		}
 		TranslateJustDummyValue(message);
 		return ORIGINAL_WND_PROC(hWnd, message, wParam, lParam);
 	}

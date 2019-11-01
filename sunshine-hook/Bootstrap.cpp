@@ -28,7 +28,7 @@ void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	LOG(INFO) << _startupInfo->videoIP;
 	LOG(INFO) << _startupInfo->encoderAPI;
 	socket = InitSocket();
-	InstallHookD9();
+	//InstallHookD9();
 	InstallHookD11();
 	//InstallHookOpenGL();
 	InitInputPipeline();

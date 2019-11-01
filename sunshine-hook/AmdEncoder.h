@@ -25,6 +25,8 @@ namespace Encode {
 		bool SetEncoderProperties(UINT width, UINT height, UINT frame, amf::AMF_SURFACE_FORMAT f);
 		bool SendSurfaceToEncoder(amf::AMFSurfacePtr surface);
 		bool encoderStarted = false;
+		ID3D11Device* device = nullptr;
+		amf::AMFSurfacePtr surfaceamf;
 	};
 
 }

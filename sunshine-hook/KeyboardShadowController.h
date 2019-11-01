@@ -14,8 +14,7 @@ class KeyboardShadowController
 {
 public:
 	std::map<UINT, ButtonEventType> keys;
-	std::queue<InputCommand> _commandQueue;
-	InputCommand commands[128];
+	//std::queue<InputCommand> _commandQueue;
 	void UpdateState(InputCommand command, HWND * wnd, int wndCount);
 	int ReadInput(InputCommand commandBuffer[], size_t size);
 	
@@ -27,8 +26,9 @@ public:
 		}
 		return instance;
 	}
-	int lastCommand = 5;
+	int lastCommand = 0;
 private:
 	static KeyboardShadowController * instance;
+	InputCommand commands[128];
 };
 

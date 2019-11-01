@@ -4,6 +4,25 @@
 
 KeyboardShadowController* KeyboardShadowController::instance = nullptr;
 
+static UINT MapKey(uint16_t scancode)
+{
+	switch (scancode) {
+	case 328:
+		scancode = 72;
+		break;
+	case 333:
+		scancode = 77;
+		break;
+	case 336:
+		scancode = 80;
+		break;
+	case 331:
+		scancode = 75;
+		break;
+	}
+	return MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+}
+
 void KeyboardShadowController::UpdateState(InputCommand command, HWND * wnd, int windowsCount)
 {
 	if (command.event1 == 0) {
@@ -11,7 +30,7 @@ void KeyboardShadowController::UpdateState(InputCommand command, HWND * wnd, int
 	}
 	UINT message = 0;
 	LPARAM lparam = 0;
-	UINT key = MapVirtualKeyA(command.val2, MAPVK_VSC_TO_VK_EX);
+	UINT key = MapKey(command.val2);
 	command.val1 = key;
 	if (command.event1 == (int16_t)ButtonEventType::BUTTON_EVENT_DOWN) {
 		message = DV_KEYDOWN;
@@ -31,7 +50,7 @@ void KeyboardShadowController::UpdateState(InputCommand command, HWND * wnd, int
 	}
 
 	commands[lastCommand % 128] = command;
-	_commandQueue.push(command);
+	//_commandQueue.push(command);
 	ORIGINAL_WND_PROC_MULTIPLE(wnd, windowsCount, message, key, lparam);
 	ORIGINAL_WND_PROC_MULTIPLE(wnd, windowsCount, DV_INPUT, RIM_INPUT, MAKELPARAM(lastCommand % 128, 0));
 	lastCommand++;
@@ -40,13 +59,15 @@ void KeyboardShadowController::UpdateState(InputCommand command, HWND * wnd, int
 int KeyboardShadowController::ReadInput(InputCommand commandBuffer[], size_t size)
 {
 	int read = 0;
-	while (size > 0 && _commandQueue.size() > 0) {
+	/*while (size > 0 && _commandQueue.size() > 0) {
 		auto comm = _commandQueue.front();
 		_commandQueue.pop();
 		memcpy(&commandBuffer[read], &comm, sizeof(InputCommand));
 		read++;
 		size--;
-	}
+	}*/
+
+	LOG(INFO) << "READ INPUT CALLED BUT UNSUPPORTED";
 	return read;
 }
   

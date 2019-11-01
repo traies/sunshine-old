@@ -83,8 +83,40 @@ void AmdEncoder::Init(IDirect3DDevice9 * device)
 	LOG(INFO) << "Everything was created fine.";
 }
 
-void AmdEncoder::Init(ID3D11Device * device)
+
+static bool InitDX11Device(ID3D11Device * ogDevice, ID3D11Device** device)
 {
+	D3D_FEATURE_LEVEL featureLevels[] = {
+		D3D_FEATURE_LEVEL_12_1,
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_9_1
+	};
+	ID3D11DeviceContext* context;
+	D3D_FEATURE_LEVEL featureLevel;
+	auto hr = D3D11CreateDevice(
+		nullptr,
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr,
+		ogDevice->GetCreationFlags(),
+		featureLevels,
+		ARRAYSIZE(featureLevels),
+		D3D11_SDK_VERSION,
+		device,
+		&featureLevel,
+		&context
+	);
+
+	return true;
+}
+
+void AmdEncoder::Init(ID3D11Device * _device)
+{
+	//InitDX11Device(_device, &device);
+	//device->AddRef();
+	device = _device;
 	amf::AMFFactory * factory(nullptr);
 	{
 		auto res = InitContext(&factory);
@@ -112,6 +144,8 @@ void AmdEncoder::Init(ID3D11Device * device)
 			ExitProcess(1);
 		}
 	}
+
+
 
 	LOG(INFO) << "Everything was created fine.";
 }
@@ -200,6 +234,20 @@ bool AmdEncoder::InitEncoder(IDirect3DSurface9 * frame)
 	return true;
 }
 
+static amf::AMF_SURFACE_FORMAT ConvertD3D11ToAMF(DXGI_FORMAT format)
+{
+	switch (format) {
+	case DXGI_FORMAT_B8G8R8A8_UNORM:
+	case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+		return amf::AMF_SURFACE_BGRA;
+	case DXGI_FORMAT_R8G8B8A8_UNORM:
+	case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+		return amf::AMF_SURFACE_RGBA;
+	default:
+		return amf::AMF_SURFACE_RGBA;
+	}
+}
+
 bool AmdEncoder::InitEncoder(ID3D11Texture2D * frame)
 {
 	D3D11_TEXTURE2D_DESC sd;
@@ -208,10 +256,10 @@ bool AmdEncoder::InitEncoder(ID3D11Texture2D * frame)
 	auto width = sd.Width;
 	auto height = sd.Height;
 	auto framerate = 60;
-
 	//	On testing, all Directx11 games work with this format, while Directx9 games work with AMF_SURFACE_BGRA.
 	//	Better format selection should be done in the future.
-	auto format = amf::AMF_SURFACE_RGBA;
+
+	auto format = ConvertD3D11ToAMF(sd.Format);
 	{
 		auto res = SetEncoderProperties(width, height, framerate, format);
 		if (!res) {
@@ -219,7 +267,18 @@ bool AmdEncoder::InitEncoder(ID3D11Texture2D * frame)
 			return false;
 		}
 	}
+
+	//	Create offscreen surface.
+	{
+		auto res = context->AllocSurface(amf::AMF_MEMORY_DX11, ConvertD3D11ToAMF(sd.Format), sd.Width, sd.Height, &surfaceamf);
+		if (res != AMF_OK) {
+			LOG(ERROR) << "CreateSurfaceFromDX11Native failed.";
+			return false;
+		}
+	}
+
 	encoderStarted = true;
+	LOG(INFO) << "Encoder started";
 	return true;
 }
 
@@ -232,7 +291,6 @@ bool AmdEncoder::InitEncoder(GLuint * texture)
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
 	//glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &f);
 	int framerate = 60;
-	GL_RGBA;
 	auto format = amf::AMF_SURFACE_RGBA;
 	{
 		auto res = SetEncoderProperties(width, height, framerate, format);
@@ -256,6 +314,7 @@ bool AmdEncoder::PutFrame(IDirect3DSurface9 * frame)
 		}
 	}
 
+
 	//	Create offscreen surface.
 	amf::AMFSurfacePtr surfaceamf;
 	{
@@ -278,6 +337,22 @@ bool AmdEncoder::PutFrame(IDirect3DSurface9 * frame)
 	return true;
 }
 
+static void FillSurfaceDX11(amf::AMFContext* context, amf::AMFSurface* surface, ID3D11Texture2D* frame)
+{
+	HRESULT hr = S_OK;
+	// fill surface with something something useful. We fill with color and color rect
+	// get native DX objects
+	ID3D11Device* deviceDX11 = (ID3D11Device*)context->GetDX11Device(); // no reference counting - do not Release()
+	ID3D11Texture2D* surfaceDX11 = (ID3D11Texture2D*)surface->GetPlaneAt(0)->GetNative(); // no reference counting - do not Release()
+
+	ID3D11DeviceContext* deviceContextDX11 = NULL;
+	deviceDX11->GetImmediateContext(&deviceContextDX11);
+	deviceContextDX11->CopyResource(surfaceDX11, frame);
+	deviceContextDX11->Release();
+}
+
+
+
 bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 {
 	//	Init encoder (but just once).
@@ -288,29 +363,14 @@ bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 			ExitProcess(1);
 		}
 	}
-	//D3D11_TEXTURE2D_DESC desc;
-	//frame->GetDesc(&desc);
-	//auto format = desc.Format;
-	//LOG(INFO) << "Format: " << format;
-	//	Create offscreen surface.
-	amf::AMFSurfacePtr surfaceamf;
-	{
-		auto res = context->CreateSurfaceFromDX11Native(frame, &surfaceamf, nullptr);
-		if (res != AMF_OK) {
-			LOG(ERROR) << "CreateSurfaceFromDX11Native failed.";
-			return false;
-		}
-	}
+	
+	FillSurfaceDX11(context, surfaceamf, frame);
 
 	//	Duplicate Buffer and send to encoder.
-	{
-		auto res = SendSurfaceToEncoder(surfaceamf);
-		if (!res) {
-			LOG(ERROR) << "DuplicateBuffer failed.";
-			return false;
-		}
+	auto res = SendSurfaceToEncoder(surfaceamf);
+	if (!res) {
+		LOG(ERROR) << "DuplicateBuffer failed.";
 	}
-	surfaceamf.Release();
 	return true;
 }
 
@@ -343,29 +403,16 @@ bool AmdEncoder::PutFrame(GLuint * texture)
 			return false;
 		}
 	}
-	surfaceamf.Release();
 	return true;
 }
 
 bool AmdEncoder::SendSurfaceToEncoder(amf::AMFSurfacePtr surface)
 {
-	//	Duplicate backbuffer.
-	amf::AMFDataPtr pDuplicated(nullptr);
-	{
-		auto res = surface->Duplicate(surface->GetMemoryType(), &pDuplicated);
-		if (res != AMF_OK) {
-			LOG(ERROR) << "Duplicate failed.";
-			return false;
-		}
-	}
-
 	//	Submit duplicate backbuffer to encoder.
-	{
-		auto res = encoder->SubmitInput(pDuplicated);
-		if (res != AMF_OK) {
-			LOG(ERROR) << "Encoder SubmitInput failed." << res;
-			return false;
-		}
+	AMF_RESULT res = encoder->SubmitInput(surface);
+	if (res != AMF_OK) {
+		LOG(ERROR) << "Encoder SubmitInput failed." << res;
+		return false;
 	}
 	return true;
 }
@@ -389,6 +436,7 @@ bool AmdEncoder::PullBuffer(std::vector<std::vector<uint8_t>>& buff)
 		return true;
 	}
 	else {
+		Sleep(2);
 		return false;
 	}
 	
