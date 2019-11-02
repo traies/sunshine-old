@@ -34,7 +34,7 @@ public:
 		HOOK_TRACE_INFO hookTraceInfo;
 		ZeroMemory(&hookTraceInfo, sizeof(hookTraceInfo));
 		//	Remember to save hookTraceInfo, it is important for release
-		if (LhInstallHook(oldfunc, newfunc, NULL, &hookTraceInfo) != 0) {
+		/*if (LhInstallHook(oldfunc, newfunc, NULL, &hookTraceInfo) != 0) {
 			LOG(ERROR) << "Hook for function " << name << " failed.";
 			return false;
 		}
@@ -42,7 +42,7 @@ public:
 		if (LhSetExclusiveACL(threadIds, 1, &hookTraceInfo)) {
 			LOG(ERROR) << "Cannot activate hook for function " << name;
 			return false;
-		}
+		}*/
 
 		LOG(INFO) << "Hook " << name << " name.";
 		return true;

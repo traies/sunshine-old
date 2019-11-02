@@ -30,7 +30,7 @@ private:
 public:
 	Bootstrap() : mq(std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only, DEFAULT_FIFO_HEARTBEAT)) {};
 	~Bootstrap() {};
-	void Init(REMOTE_ENTRY_INFO * info);
+	void Init(RemoteProcessStartInfo* info);
 
 	std::shared_ptr<UDPClient> GetSocket() { return socket; };
 	std::shared_ptr<std::thread> GetHeartbeat() { return heartbeat; };

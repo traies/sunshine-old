@@ -20,11 +20,11 @@ std::shared_ptr<UDPClient> Bootstrap::InitSocket()
 	return std::make_shared<UDPClient>(_startupInfo->videoIP, _startupInfo->videoPort);
 }
 
-void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
+void Bootstrap::Init(RemoteProcessStartInfo* info) {
 	InitLogger();
 	heartbeat = std::make_shared<std::thread>(std::thread(&Bootstrap::HeartbeatSend, this, mq));
 	
-	_startupInfo= reinterpret_cast<RemoteProcessStartInfo * >(info->UserData);
+	_startupInfo= info;
 	LOG(INFO) << _startupInfo->videoIP;
 	LOG(INFO) << _startupInfo->encoderAPI;
 	socket = InitSocket();

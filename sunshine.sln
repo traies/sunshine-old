@@ -10,7 +10,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sunshine", "sunshine\sunshi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXD9TestApplication", "DXD9TestApplication\DXD9TestApplication.vcxproj", "{D1BE59DF-6DDF-4745-9471-E9861300426B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sunshine-hook", "sunshine-hook\sunshine-hook.vcxproj", "{AB676F20-5354-45C5-A134-14707A8373A7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shook", "sunshine-hook\sunshine-hook.vcxproj", "{AB676F20-5354-45C5-A134-14707A8373A7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NvidiaCodecCommon", "NvidiaCodecCommon\NvidiaCodecCommon.vcxproj", "{A8311A2A-7410-4539-BEE0-F76DD839EF4E}"
 EndProject
