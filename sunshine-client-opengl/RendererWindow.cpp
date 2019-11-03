@@ -109,7 +109,7 @@ void RendererWindow::MouseScrollCallback(GLFWwindow* window, double xoffset, dou
 	double x, y, xnor, ynor;
 	glfwGetCursorPos(window, &x, &y);
 	NormalizeScreenPoint(window, x, y, xnor, ynor);
-	MakeScrollCommand(mouseCommand, x, y, yoffset);
+	MakeScrollCommand(mouseCommand, xnor, ynor, yoffset);
 	renderWindow->commands.push(mouseCommand);
 }
 void RendererWindow::CloseAndExit(int code)

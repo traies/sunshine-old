@@ -1,5 +1,5 @@
 #pragma once
-#include "UDPClient.h"
+#include "TCPClient.h"
 #include <stdexcept>
 #include <GLFW\glfw3.h>
 #include "MpvWrapper.h"
@@ -82,12 +82,13 @@ public:
 		//	Send input commands on this thread.
 		std::thread thread([&] {
 			//	Start Controller UDPClient
-			UDPClient client("127.0.0.1", 1235);
+			TCPClient client;
+			client.Connect("127.0.0.1", "1235");
 			while (true) {
 				if (!commands.empty()) {
 					InputCommand command = commands.front();
 					commands.pop();
-					int sent = client.send(&command, sizeof(InputCommand));
+					int sent = client.Send((char *)&command, sizeof(InputCommand));
 					if (sent > 0) {
 					}
 					else {

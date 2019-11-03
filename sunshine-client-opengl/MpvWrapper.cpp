@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "MpvWrapper.h"
-#include <windows.h>
+//#include <windows.h>
 
 void * MpvWrapper::GetProcAddressMpv(void * fn_ctx, const char * name)
 {
