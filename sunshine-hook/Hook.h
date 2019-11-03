@@ -2,10 +2,16 @@
 #include <string>
 #include <boost\asio.hpp>
 #include "EncodePipeline.h"
-#include <easyhook.h>
 #include "..\easyloggingpp\easylogging++.h"
 #include <boost\interprocess\ipc\message_queue.hpp>
 #include "UDPClient.h"
+#include "MinHook.h"
+
+//#ifdef _WIN64
+//#pragma comment(lib, "MinHook.x64.lib")
+//#else
+//#pragma comment(lib, "MinHook.x86.lib")
+//#endif
 
 LRESULT __stdcall TempWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -30,9 +36,24 @@ public:
 
 	bool InstallHook(std::string name, void * oldfunc, void *newfunc)
 	{
-		ULONG threadIds[] = { 0 };
-		HOOK_TRACE_INFO hookTraceInfo;
-		ZeroMemory(&hookTraceInfo, sizeof(hookTraceInfo));
+		// Initialize MinHook.
+		//if (MH_Initialize() != MH_OK)
+		//{
+		//	return 1;
+		//}
+
+		//// Create a hook for MessageBoxW, in disabled state.
+		//if (MH_CreateHook(oldfunc, newfunc, nullptr) != MH_OK)
+		//{
+		//	return 1;
+		//}
+
+		//// Enable the hook for MessageBoxW.
+		//if (MH_EnableHook(oldfunc) != MH_OK)
+		//{
+		//	return 1;
+		//}
+
 		//	Remember to save hookTraceInfo, it is important for release
 		/*if (LhInstallHook(oldfunc, newfunc, NULL, &hookTraceInfo) != 0) {
 			LOG(ERROR) << "Hook for function " << name << " failed.";
