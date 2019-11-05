@@ -11,7 +11,7 @@ public:
 	bool Connect(const char* ip, const char* port);
 	int Send(char* buf, int len);
 	int Receive(char* buf, int len);
-	SOCKET _socket;
+	SOCKET _socket = 0;
 };
 
 

@@ -133,6 +133,7 @@ bool TCPClient::Connect(const char* ip, const char* port)
 	}
 	freeaddrinfo(result);
 	LOG(INFO) << "Connected";
+	return true;
 }
 
 int TCPClient::Send(char* buf, int len)

@@ -33,6 +33,9 @@
     <ClInclude Include="TCPClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VideoPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -62,9 +65,16 @@
     <ClCompile Include="TCPClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VideoPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="mpv-1.dll" />
+    <None Include="Passthrough.vert" />
+    <None Include="Passthrough.frag" />
   </ItemGroup>
 </Project>
