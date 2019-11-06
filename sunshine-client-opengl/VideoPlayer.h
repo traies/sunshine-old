@@ -16,7 +16,7 @@ public:
 	bool Init();
 	bool NextFrame(AVFrame ** frame);
 	bool ProcessFrame(int displayW, int displayH);
-	bool SubmitFrame(uint8_t* buffer, size_t len);
+	bool SubmitFrame(uint8_t* buffer, size_t len, int width, int height);
 	void Close();
 private:
 	AVCodec* decoder = nullptr;

@@ -80,6 +80,7 @@ bool TCPClient::Listen(const char * port)
 		WSACleanup();
 		return false;
 	}
+
 	closesocket(ListenSocket);
 	return true;
 }
@@ -117,6 +118,9 @@ bool TCPClient::Connect(const char* ip, const char* port)
 		WSACleanup();
 		return false;
 	}
+
+	int opt = 1;
+	setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (char*)&opt, sizeof(int));
 
 	while (true) {
 		iResult = connect(_socket, result->ai_addr, result->ai_addrlen);

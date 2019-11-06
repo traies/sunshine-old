@@ -333,21 +333,14 @@ int RendererWindow::Render()
 	std::thread videoStreamThread([this, displayW, displayH] {
 		TCPClient client;
 		client.Listen("1234");
-		char buffer[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+		static char buffer[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
 		// As seen in https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decode_video.c
 		memset(buffer + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 		int received;
 		while (!exit) {
 			received = client.Receive(buffer, INBUF_SIZE);
 			if (received > 0) {
-				if (this->player.SubmitFrame(reinterpret_cast<uint8_t*>(buffer), received)) {
-					if (this->player.ProcessFrame(displayW, displayH)) {
-						//Sleep(2);
-					}
-					else {
-						LOG(ERROR) << "Could not process frame";
-						//Sleep(1);
-					}
+				if (this->player.SubmitFrame(reinterpret_cast<uint8_t*>(buffer), received, displayW, displayH)) {
 				}
 				else {
 					LOG(ERROR) << "COuld not submit frame";
@@ -374,7 +367,7 @@ int RendererWindow::Render()
 	std::thread controllerThread([this] {
 		//	Start Controller UDPClient
 		TCPClient client;
-		client.Connect("127.0.0.1", "1235");
+		client.Connect("192.168.0.61", "1235");
 		while (!exit) {
 			if (!commands.empty()) {
 				InputCommand command = commands.front();
@@ -396,19 +389,31 @@ int RendererWindow::Render()
 
 	glfwSwapInterval(0);
 
+
+	// Draw initial black screen 
+	glfwMakeContextCurrent(window);
+	glfwGetFramebufferSize(window, &displayW, &displayH);
+	glViewport(0, 0, displayW, displayH);
+	glClearColor(0, 1, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(program);
+	DrawTexturedTriangles(videoTexture, vertexBuffer, uvBuffer, textureSampler);
+	glfwSwapBuffers(window);
+	glFinish();
+
 	while (!exit && !glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-
-		glfwMakeContextCurrent(window);
-		glfwGetFramebufferSize(window, &displayW, &displayH);
-		glViewport(0, 0, displayW, displayH);
-		glClearColor(0, 1, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
-		//glFlush();
 
 		// Copy next frame to texture
 		AVFrame* frame;
 		if (player.NextFrame(&frame)) {
+			
+			glfwMakeContextCurrent(window);
+			glfwGetFramebufferSize(window, &displayW, &displayH);
+			glViewport(0, 0, displayW, displayH);
+			glClearColor(0, 1, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, videoTexture);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -419,15 +424,18 @@ int RendererWindow::Render()
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,  displayW, displayH, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1280, 720, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
 			glBindTexture(GL_TEXTURE_2D, 0);
+
+			glUseProgram(program);
+			DrawTexturedTriangles(videoTexture, vertexBuffer, uvBuffer, textureSampler);
+
+			glfwSwapBuffers(window);
+			glFinish();
+		}
+		else {
+			Sleep(1);
 		}
 
-		glUseProgram(program);
-		DrawTexturedTriangles(videoTexture, vertexBuffer, uvBuffer, textureSampler);
-
-		glfwSwapBuffers(window);
-		glFinish();
-		glFlush();
-		//glfwWaitEvents();
+		//QueryPerformanceCounter(&lastDraw);
 	}
 
 	controllerThread.join();

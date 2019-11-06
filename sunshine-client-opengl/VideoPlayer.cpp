@@ -49,7 +49,7 @@ void VideoPlayer::Close()
 	}
 }
 
-bool VideoPlayer::SubmitFrame(uint8_t* buffer, size_t len)
+bool VideoPlayer::SubmitFrame(uint8_t* buffer, size_t len, int displayW, int displayH)
 {
 	int parsed;
 	while (len > 0) {
@@ -68,6 +68,8 @@ bool VideoPlayer::SubmitFrame(uint8_t* buffer, size_t len)
 				//avcodec_flush_buffers(context);
 				return false;
 			}
+
+			ProcessFrame(displayW, displayH);
 		}	
 	}
 	return true;
