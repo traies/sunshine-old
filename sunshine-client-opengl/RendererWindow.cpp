@@ -154,7 +154,7 @@ void RendererWindow::WindowCloseCallback(GLFWwindow * window)
 void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
 	auto renderWindow = (RendererWindow*)glfwGetWindowUserPointer(window);
-	if (key == GLFW_KEY_P && action == GLFW_PRESS && (mods & (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) == mods) {
+	if (key == GLFW_KEY_P && action == GLFW_PRESS && (mods & (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) {
 		if (!renderWindow->captureMouse) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
@@ -162,6 +162,24 @@ void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 		renderWindow->captureMouse = !renderWindow->captureMouse;
+	}
+	else if (key == GLFW_KEY_W && action == GLFW_PRESS && (mods & (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) {
+		if (!renderWindow->fullscreen) {
+			glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, renderWindow->width, renderWindow->height, 60);
+		}
+		else {
+			glfwSetWindowMonitor(window, nullptr, 0, 0, renderWindow->width, renderWindow->height, 60);
+		}
+		renderWindow->fullscreen = !renderWindow->fullscreen;
+	}
+	else if (key == GLFW_KEY_V && action == GLFW_PRESS && (mods & (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) {
+		if (!renderWindow->vSync) {
+			glfwSwapInterval(1);
+		}
+		else {
+			glfwSwapInterval(0);
+		}
+		renderWindow->fullscreen = !renderWindow->fullscreen;
 	}
 	else {
 		InputCommand mouseCommand;
@@ -226,14 +244,15 @@ void RendererWindow::CloseAndExit(int code)
 	code = code;
 }
 
-void DrawTexturedTriangles(GLuint videoTexture, GLuint vertexBuffer, GLuint uvBuffer, GLuint textureSampler)
+void RendererWindow::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
+	auto renderWindow = (RendererWindow*)glfwGetWindowUserPointer(window);
+	renderWindow->width = width;
+	renderWindow->height = height;
+}
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, videoTexture);
-
-	glUniform1i(textureSampler, 0);
-
+void DrawTexturedTriangles(GLuint vertexBuffer, GLuint uvBuffer)
+{
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glVertexAttribPointer(
@@ -312,21 +331,40 @@ int RendererWindow::Render()
 	
 
 	int displayW, displayH;
-	GLuint videoTexture;
-	glGenTextures(1, &videoTexture);
+	glfwGetFramebufferSize(window, &displayW, &displayH);
+
+	GLuint yTexture, uTexture, vTexture;
+	glGenTextures(1, &yTexture);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, videoTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glBindTexture(GL_TEXTURE_2D, yTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glfwGetFramebufferSize(window, &displayW, &displayH);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, displayW, displayH, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	GLuint textureSampler = glGetUniformLocation(program, "myTextureSampler");
+	glGenTextures(1, &uTexture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, uTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenTextures(1, &vTexture);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, vTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	GLuint ySampler = glGetUniformLocation(program, "ySampler");
+	GLuint uSampler = glGetUniformLocation(program, "uSampler");
+	GLuint vSampler = glGetUniformLocation(program, "vSampler");
 
 	player.Init();
 
@@ -352,16 +390,6 @@ int RendererWindow::Render()
 		}
 		});
 
-	//std::thread videoProcessThread([this] {
-	//	while (!exit) {
-	//		if (this->player.ProcessFrame(displayW, displayH)) {
-	//		}
-	//		else {
-	//			//LOG(ERROR) << "Could not process frame";
-	//			Sleep(1);
-	//		}
-	//	}
-	//});
 
 	//	Send input commands on this thread.
 	std::thread controllerThread([this] {
@@ -386,18 +414,15 @@ int RendererWindow::Render()
 		}
 		});
 
-
-	glfwSwapInterval(0);
-
+	glfwSwapInterval(vSync ? 1 : 0);
 
 	// Draw initial black screen 
 	glfwMakeContextCurrent(window);
 	glfwGetFramebufferSize(window, &displayW, &displayH);
 	glViewport(0, 0, displayW, displayH);
-	glClearColor(0, 1, 0, 1);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(program);
-	DrawTexturedTriangles(videoTexture, vertexBuffer, uvBuffer, textureSampler);
 	glfwSwapBuffers(window);
 	glFinish();
 
@@ -407,40 +432,47 @@ int RendererWindow::Render()
 		// Copy next frame to texture
 		AVFrame* frame;
 		if (player.NextFrame(&frame)) {
-			
+
 			glfwMakeContextCurrent(window);
 			glfwGetFramebufferSize(window, &displayW, &displayH);
 			glViewport(0, 0, displayW, displayH);
-			glClearColor(0, 1, 0, 1);
+			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, videoTexture);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,  displayW, displayH, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1280, 720, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
-			glBindTexture(GL_TEXTURE_2D, 0);
-
 			glUseProgram(program);
-			DrawTexturedTriangles(videoTexture, vertexBuffer, uvBuffer, textureSampler);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, yTexture);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[0]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width, frame->height, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[0]);
+			glUniform1i(ySampler, 0);
+
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, uTexture);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[1]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width / 2, frame->height / 2, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[1]);
+			glUniform1i(uSampler, 1);
+
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, vTexture);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[2]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width / 2, frame->height / 2, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[2]);
+			glUniform1i(vSampler, 2);
+
+			av_frame_unref(frame);
+ 			DrawTexturedTriangles(vertexBuffer, uvBuffer);
 
 			glfwSwapBuffers(window);
 			glFinish();
 		}
 		else {
-			Sleep(1);
+			//Sleep(2);
 		}
-
-		//QueryPerformanceCounter(&lastDraw);
 	}
 
 	controllerThread.join();
 	videoStreamThread.join();
-	//videoProcessThread.join();
 	return code;
 }
 
