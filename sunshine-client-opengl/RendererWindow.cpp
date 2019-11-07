@@ -179,7 +179,7 @@ void RendererWindow::KeyCallback(GLFWwindow * window, int key, int scancode, int
 		else {
 			glfwSwapInterval(0);
 		}
-		renderWindow->fullscreen = !renderWindow->fullscreen;
+		renderWindow->vSync = !renderWindow->vSync;
 	}
 	else {
 		InputCommand mouseCommand;
@@ -395,7 +395,7 @@ int RendererWindow::Render()
 	std::thread controllerThread([this] {
 		//	Start Controller UDPClient
 		TCPClient client;
-		client.Connect("192.168.0.61", "1235");
+		client.Connect("127.0.0.1", "1235");
 		while (!exit) {
 			if (!commands.empty()) {
 				InputCommand command = commands.front();
