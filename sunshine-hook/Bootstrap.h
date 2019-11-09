@@ -5,7 +5,7 @@
 #include "D11Hook.h"
 #include <RemoteStartupInfo.h>
 #include <thread>
-#include "UDPClient.h"
+#include "UDPClientNew.h"
 #include "InputPipeline.h"
 #include "Encoder.h"
 
@@ -14,7 +14,7 @@ class Bootstrap
 {
 private:
 	void InitLogger();
-	std::shared_ptr<UDPClient> InitSocket();
+	std::shared_ptr<UDPClientNew> InitSocket();
 	void InstallHookD9();
 	void InstallHookD11();
 	void InstallHookOpenGL();
@@ -22,7 +22,7 @@ private:
 	void HeartbeatSend(std::shared_ptr<boost::interprocess::message_queue> mq);
 	
 	bool stop = false;
-	std::shared_ptr<UDPClient> socket;
+	std::shared_ptr<UDPClientNew> socket;
 	std::shared_ptr<std::thread> heartbeat;
 	std::shared_ptr<boost::interprocess::message_queue> mq;
 	static std::unique_ptr<InputPipeline> inputPipeline;
@@ -32,7 +32,7 @@ public:
 	~Bootstrap() {};
 	void Init(REMOTE_ENTRY_INFO * info);
 
-	std::shared_ptr<UDPClient> GetSocket() { return socket; };
+	std::shared_ptr<UDPClientNew> GetSocket() { return socket; };
 	std::shared_ptr<std::thread> GetHeartbeat() { return heartbeat; };
 };
 

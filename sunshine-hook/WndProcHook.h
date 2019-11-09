@@ -113,6 +113,7 @@ inline static BOOL TranslateDummyValue(UINT& message, WPARAM wparam)
 	case WM_KEYUP:
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
+	case WM_SYSCOMMAND:
 	case WM_INPUT:
 	case WM_COMMAND:
 	case WM_APPCOMMAND:
@@ -223,12 +224,21 @@ private:
 		case WM_ACTIVATE:
 			if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE) {
 				LOG(INFO) << "Window activated.";
-				return ORIGINAL_WND_PROC(hWnd, message, wParam, lParam);
+				break;
 			}
 			else {
 				LOG(INFO) << "Window inactivated  56.";
-				return 0;// DefWindowProc(hWnd, message, wParam, lParam);
+				return DefWindowProcW(hWnd, message, wParam, lParam);
 			}
+			break;
+		case WM_KILLFOCUS:
+			LOG(INFO) << "Kill focus";
+			return DefWindowProcW(hWnd, message, wParam, lParam);
+		case WM_SETFOCUS:
+			LOG(INFO) << "Set focus";
+			break;
+		case WM_SYSCOMMAND:
+			LOG(INFO) << "SYSCOMMAND";
 			break;
 		}
 		TranslateJustDummyValue(message);

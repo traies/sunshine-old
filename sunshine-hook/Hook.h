@@ -1,6 +1,5 @@
 #pragma once 
 #include <string>
-#include <boost\asio.hpp>
 #include "EncodePipeline.h"
 #include <easyhook.h>
 #include "..\easyloggingpp\easylogging++.h"

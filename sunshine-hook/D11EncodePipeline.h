@@ -7,7 +7,7 @@ namespace Encode {
 	class D11EncodePipeline: public EncodePipeline<ID3D11Texture2D>
 	{
 	public:
-		D11EncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket)
+		D11EncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClientNew> socket)
 			: EncodePipeline<ID3D11Texture2D>(std::move(encoder), pipe, socket)
 		{
 		};

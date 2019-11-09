@@ -5,7 +5,7 @@ namespace Encode {
 	class GLEncodePipeline : public EncodePipeline<HDC>
 	{
 	public:
-		GLEncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClient> socket): 
+		GLEncodePipeline(std::unique_ptr<Encoder> encoder, HANDLE pipe, std::shared_ptr<UDPClientNew> socket): 
 			EncodePipeline<HDC>(std::move(encoder), pipe, socket)
 		{
 		};

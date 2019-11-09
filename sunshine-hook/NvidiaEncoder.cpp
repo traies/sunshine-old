@@ -55,16 +55,6 @@ bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 		queue.push(buffer);
 		frameLock.unlock();
 	}
-
-	/*if (!hasFrame) {
-		ID3D11DeviceContext* context;
-		d3d11device1->GetImmediateContext(&context);
-		context->CopyResource(auxFrame, frame);
-		context->Flush();
-		context->Release();
-		hasFrame = true;
-	}*/
-
 	return true;
 }
 
@@ -82,31 +72,6 @@ bool NvidiaEncoder::PullBuffer(std::vector<std::vector<uint8_t>>& buffer)
 		return true;
 	}
 	return false;
-	//bool ret = false;
-	//try {
-	//	if (hasFrame) {
-	//		ID3D11DeviceContext* context;
-	//		d3d11device2->GetImmediateContext(&context);
-
-
-	//		context->CopyResource(surf, auxFrame);
-	//		//context->Flush();
-	//		encoder->EncodeFrame(buffer);
-
-	//		context->Release();
-	//		ret = true;
-	//		hasFrame = false;
-	//	}
-	//	else {
-	//		ret = false;
-	//	}	
-	//}
-	//catch (std::exception& ex) {
-	//	LOG(ERROR) << "Catched something: " << ex.what();
-	//	hasFrame = false;
-	//	ret = false;
-	//}
-	//return ret;
 }
 
 bool NvidiaEncoder::InitEncoder(IDirect3DSurface9 * frame)
@@ -173,12 +138,12 @@ bool NvidiaEncoder::InitEncoder(ID3D11Texture2D * frame)
 	NV_ENC_CONFIG encodeConfig = { NV_ENC_CONFIG_VER };
 	initializeParams.encodeConfig = &encodeConfig;
 	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID);
-	//encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
+	encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
 	//encodeConfig.rcParams.averageBitRate = (static_cast<unsigned int>(5.0f * initializeParams.encodeWidth * initializeParams.encodeHeight) / (1920 * 1080)) * 100000;
-	//encodeConfig.rcParams.averageBitRate = 150000000;
-	//encodeConfig.rcParams.vbvBufferSize = 0; // (encodeConfig.rcParams.averageBitRate * initializeParams.frameRateDen / initializeParams.frameRateNum) * 5;
-	//encodeConfig.rcParams.maxBitRate = encodeConfig.rcParams.averageBitRate;
-	//encodeConfig.rcParams.vbvInitialDelay = 0; // encodeConfig.rcParams.vbvBufferSize;
+	encodeConfig.rcParams.averageBitRate = 10000000;
+	encodeConfig.rcParams.vbvBufferSize = 0; // (encodeConfig.rcParams.averageBitRate * initializeParams.frameRateDen / initializeParams.frameRateNum) * 5;
+	encodeConfig.rcParams.maxBitRate = encodeConfig.rcParams.averageBitRate;
+	encodeConfig.rcParams.vbvInitialDelay = 0; // encodeConfig.rcParams.vbvBufferSize;
 	try {
 		encoder->CreateEncoder(&initializeParams);
 	}

@@ -14,10 +14,10 @@
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
 
-std::shared_ptr<UDPClient> Bootstrap::InitSocket()
+std::shared_ptr<UDPClientNew> Bootstrap::InitSocket()
 {
 	LOG(INFO) << "Streaming video to " << _startupInfo->videoIP << ":" << _startupInfo->videoPort;
-	return std::make_shared<UDPClient>(_startupInfo->videoIP, _startupInfo->videoPort);
+	return std::make_shared<UDPClientNew>(_startupInfo->videoIP, _startupInfo->videoPort);
 }
 
 void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
@@ -31,7 +31,7 @@ void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	//InstallHookD9();
 	InstallHookD11();
 	//InstallHookOpenGL();
-	InitInputPipeline();
+	//InitInputPipeline();
 	return;
 }
 
