@@ -157,11 +157,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MpvWrapper.h" />
+    <ClInclude Include="Networking.h" />
     <ClInclude Include="RendererWindow.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TCPClient.h" />
     <ClInclude Include="UDPClient.h" />
+    <ClInclude Include="UDPServer.h" />
     <ClInclude Include="VideoPlayer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +180,7 @@
     <ClCompile Include="InputCommand.cpp" />
     <ClCompile Include="InputCommand.h" />
     <ClCompile Include="MpvWrapper.cpp" />
+    <ClCompile Include="Networking.cpp" />
     <ClCompile Include="RendererWindow.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -188,6 +191,7 @@
     <ClCompile Include="sunshine-client-opengl.cpp" />
     <ClCompile Include="TCPClient.cpp" />
     <ClCompile Include="UDPClient.cpp" />
+    <ClCompile Include="UDPServer.cpp" />
     <ClCompile Include="VideoPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>

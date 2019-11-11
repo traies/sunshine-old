@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "RendererWindow.h"
 #include "..\easyloggingpp\easylogging++.h"
-#include <chrono>
+#include "UDPClient.h"
+#include "Networking.h"
 
 #define INBUF_SIZE 16384 
-
 
 void GLAPIENTRY
 MessageCallback(GLenum source,
@@ -369,19 +369,30 @@ int RendererWindow::Render()
 	player.Init();
 
 	std::thread videoStreamThread([this, displayW, displayH] {
-		TCPClient client;
-		client.Listen("1234");
-		static char buffer[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+		UDPClient client("127.0.0.1", 1234);
+		client.Bind();
+		static uint8_t buffer[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+		uint8_t* videoFrame;
+		uint32_t videoFrameSize;
 		// As seen in https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decode_video.c
 		memset(buffer + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 		int received;
+		VideoReader reader;
+		uint32_t payloadSize = 0;
 		while (!exit) {
-			received = client.Receive(buffer, INBUF_SIZE);
+			received = client.Receive((char*) buffer, INBUF_SIZE);
 			if (received > 0) {
-				if (this->player.SubmitFrame(reinterpret_cast<uint8_t*>(buffer), received, displayW, displayH)) {
-				}
-				else {
-					LOG(ERROR) << "COuld not submit frame";
+				if (reader.ReadChunk(buffer, received)) {
+					if (reader.GetFrame(&videoFrame, videoFrameSize)) {
+						do {
+							if (this->player.SubmitFrame(videoFrame, videoFrameSize, displayW, displayH)) {
+							}
+							else {
+								LOG(ERROR) << "Could not submit frame";
+							}
+							free(videoFrame);
+						} while (reader.GetFrame(&videoFrame, videoFrameSize));
+					}
 				}
 			}
 			else {

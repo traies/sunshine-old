@@ -1,41 +1,110 @@
 #include "stdafx.h"
 #include "UDPClient.h"
+#include "..\easyloggingpp\easylogging++.h"
 
-//UDPClient::UDPClient(const std::string& host, const unsigned int port)
-//{
-//	io_service = std::make_unique<boost::asio::io_service>();
-//	work = std::make_unique<boost::asio::io_service::work>(*io_service);
-//	socket = std::make_unique<tcp::socket>(*io_service, tcp::endpoint(tcp::v4(), 0));
-//	destination = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(host), port);
-//	boost::system::error_code error;
-//	while (true) {
-//		socket->connect(destination, error);
-//		if (error) {
-//			LOG(ERROR) << error.message();
-//			Sleep(5000);
-//		}
-//		else {
-//			LOG(INFO) << "Connected";
-//			break;
-//		}
-//	}
-//	io_service_thread = std::thread(boost::bind(&boost::asio::io_service::run, boost::ref(*io_service)));
-//	io_service_thread.detach();
-//}
-//
-//UDPClient::~UDPClient()
-//{
-//
-//}
-//
-//size_t UDPClient::send(void * msg, int size)
-//{
-//	try {
-//		char* buffer = static_cast<char*>(msg);
-//		return socket->send(boost::asio::buffer(msg, size));
-//	}
-//	catch (std::exception& ex) {
-//		LOG(ERROR) << "Error: " << ex.what();
-//	}
-//
-//}
+UDPClient::UDPClient(const char* ip, int port)
+{
+	char portStr[100];
+	_itoa_s(port, portStr, 10);
+	Init(ip, portStr);
+}
+
+UDPClient::~UDPClient()
+{
+
+}
+
+bool UDPClient::Init(const char* ip, const char* port)
+{
+	WSADATA wsaData;
+
+	int res;
+	res = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (res != 0) {
+		LOG(ERROR) << "WSAStartup failed: " << res;
+		return false;
+	}
+
+	struct addrinfo* ptr = nullptr, hints;
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_protocol = IPPROTO_UDP;
+
+	res = getaddrinfo(ip, port, &hints, &addr);
+	if (res != 0) {
+		LOG(ERROR) << "getaddrinfo failed: " << res;
+		WSACleanup();
+		return false;
+	}
+
+	_socket = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+	if (_socket == INVALID_SOCKET) {
+		LOG(ERROR) << "socket failed: " << WSAGetLastError();
+		freeaddrinfo(addr);
+		WSACleanup();
+		return false;
+	}
+
+	return true;
+}
+
+bool UDPClient::Bind()
+{
+	int iResult = bind(_socket, addr->ai_addr, addr->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		LOG(ERROR) << "Bind failed with error: " << WSAGetLastError();
+		freeaddrinfo(addr);
+		closesocket(_socket);
+		WSACleanup();
+		return false;
+	}
+
+	return true;
+}
+
+int UDPClient::Send(char* buf, int len)
+{
+	if (!_socket) {
+		LOG(ERROR) << "No socket to send";
+		return 0;
+	}
+	int iResult = send(_socket, buf, len, 0);
+	if (iResult > 0) {
+		// OK
+		return iResult;
+	}
+	else if (iResult == 0) {
+		// Closing nicely
+		LOG(INFO) << "Closing socket...";
+		return 0;
+	}
+	else {
+		// Closing with errors.
+		LOG(ERROR) << "Error recv: " << WSAGetLastError();
+		return 0;
+	}
+}
+
+int UDPClient::Receive(char* buf, int len)
+{
+	if (!_socket) {
+		LOG(ERROR) << "No socket to send";
+		return 0;
+	}
+	int iResult = recv(_socket, buf, len, 0);
+	if (iResult > 0) {
+		// OK
+		return iResult;
+	}
+	else if (iResult == 0) {
+		// Closing nicely
+		LOG(INFO) << "Closing socket...";
+		return 0;
+	}
+	else {
+		// Closing with errors.
+		LOG(ERROR) << "Error recv: " << WSAGetLastError();
+		return 0;
+	}
+}

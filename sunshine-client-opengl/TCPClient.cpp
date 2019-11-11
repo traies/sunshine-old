@@ -1,11 +1,8 @@
 #include "stdafx.h"
-
 #include "TCPClient.h"
-
-#include <winsock2.h>
+#include "..\easyloggingpp\easylogging++.h"
 #include <ws2tcpip.h>
 
-#include "..\easyloggingpp\easylogging++.h"
 TCPClient::TCPClient() 
 {
 
