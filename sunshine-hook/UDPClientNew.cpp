@@ -58,6 +58,9 @@ bool UDPClientNew::Init(const char * fromIp, const char * fromPort, const char* 
 		return false;
 	}
 
+	DWORD buffSize = 104857600;
+	setsockopt(_socket, SOL_SOCKET, SO_SNDBUF, (char*)&buffSize, sizeof(DWORD));
+
 	res = connect(_socket, to->ai_addr, to->ai_addrlen);
 	if (res != 0) {
 		LOG(ERROR) << "connect failed: " << WSAGetLastError();
@@ -74,28 +77,21 @@ int UDPClientNew::Send(char* buf, int len)
 		return 0;
 	}
 
-	int bufferSize;
-	while (len > 0) {
-		bufferSize = min(1000, len);
-		int iResult = send(_socket, buf, bufferSize, 0);
-		if (iResult > 0) {
-			// OK
-			len -= iResult;
-			buf += iResult;
-			continue;
-		}
-		else if (iResult == 0) {
-			// Closing nicely
-			LOG(INFO) << "Closing socket...";
-			return 0;
-		}
-		else {
-			// Closing with errors.
-			LOG(ERROR) << "Error sending: " << WSAGetLastError();
-			return 0;
-		}
+	int iResult = send(_socket, buf, len, 0);
+	if (iResult > 0) {
+		// OK
+		return iResult;
 	}
-	return len;
+	else if (iResult == 0) {
+		// Closing nicely
+		LOG(INFO) << "Closing socket...";
+		return 0;
+	}
+	else {
+		// Closing with errors.
+		LOG(ERROR) << "Error sending: " << WSAGetLastError();
+		return 0;
+	}
 }
 
 int UDPClientNew::Receive(char* buf, int len)

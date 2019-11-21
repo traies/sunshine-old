@@ -18,52 +18,51 @@ bool UDPServer::Init()
 	struct addrinfo* result = nullptr, * ptr = nullptr, hints;
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_protocol = IPPROTO_UDP;
+	//hints.ai_flags = AI_PASSIVE;
 
-	iResult = getaddrinfo(nullptr, _port, &hints, &result);
+	iResult = getaddrinfo("169.254.36.187", _port, &hints, &result);
 	if (iResult != 0) {
 		LOG(ERROR) << "getaddrinfo failed: " << iResult;
 		return false;
 	}
 
-	SOCKET ListenSocket = INVALID_SOCKET;
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if (ListenSocket == INVALID_SOCKET) {
+	_clientSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	if (_clientSocket == INVALID_SOCKET) {
 		LOG(ERROR) << "Error at socket(): " << WSAGetLastError();
 		freeaddrinfo(result);
 		WSACleanup();
 		return false;
 	}
 
-	iResult = bind(ListenSocket, result->ai_addr, result->ai_addrlen);
+	iResult = bind(_clientSocket, result->ai_addr, result->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
 		LOG(ERROR) << "Bind failed with error: " << WSAGetLastError();
 		freeaddrinfo(result);
-		closesocket(ListenSocket);
+		closesocket(_clientSocket);
 		WSACleanup();
 		return false;
 	}
 
 	freeaddrinfo(result);
 
-	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		LOG(ERROR) << "Listen failed with error: " << WSAGetLastError();
-		closesocket(ListenSocket);
-		WSACleanup();
-		return false;
-	}
+	//if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
+	//	LOG(ERROR) << "Listen failed with error: " << WSAGetLastError();
+	//	closesocket(ListenSocket);
+	//	WSACleanup();
+	//	return false;
+	//}
 
-	_clientSocket = INVALID_SOCKET;
-	_clientSocket = accept(ListenSocket, (sockaddr *) NULL, (int) NULL);
-	if (_clientSocket == INVALID_SOCKET) {
-		LOG(ERROR) << "Accept failed with error: " << WSAGetLastError();
-		closesocket(ListenSocket);
-		WSACleanup();
-		return false;
-	}
-	closesocket(ListenSocket);
+	//_clientSocket = INVALID_SOCKET;
+	//_clientSocket = accept(ListenSocket, (sockaddr *) NULL, (int) NULL);
+	//if (_clientSocket == INVALID_SOCKET) {
+	//	LOG(ERROR) << "Accept failed with error: " << WSAGetLastError();
+	//	closesocket(ListenSocket);
+	//	WSACleanup();
+	//	return false;
+	//}
+	//closesocket(ListenSocket);
 	return true;
 }
 

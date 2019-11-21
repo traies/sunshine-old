@@ -21,8 +21,8 @@ namespace Encode {
 		};
 		void Init(ID3D11Device* device) override 
 		{
-			d3d11device = device;
-			/*D3D_FEATURE_LEVEL levels[] = {
+			//d3d11device = device;
+			D3D_FEATURE_LEVEL levels[] = {
 				device->GetFeatureLevel(),
 			};
 			IDXGIDevice * dxgiDevice;
@@ -38,7 +38,7 @@ namespace Encode {
 				levels,
 				1,
 				D3D11_SDK_VERSION,
-				&d3d11device2,
+				&d3d11device,
 				nullptr,
 				&context
 			);
@@ -47,7 +47,7 @@ namespace Encode {
 			}
 			else {
 				context->Release();
-			}*/
+			}
 		};
 		void Init(HDC* hdc) override
 		{
@@ -84,6 +84,7 @@ namespace Encode {
 		std::mutex frameLock;
 		ID3D11Texture2D* auxFrame = nullptr;
 		bool hasFrame = false;
+		NV_ENC_INITIALIZE_PARAMS initializeParams;
 	};
 }
 

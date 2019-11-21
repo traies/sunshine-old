@@ -22,7 +22,8 @@ void InputPipeline::Run()
 		int read = NextCommand(command);
 		if (read <= 0) {
 			LOG(ERROR) << "Input socket was closed.";
-			break;
+			//break;
+			Sleep(5);
 		}
 		if (command.type == (int16_t) InputCommandType::INPUT_COMMAND_MOUSE) {
 			auto controller = MouseShadowController::GetInstance();

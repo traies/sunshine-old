@@ -366,6 +366,8 @@ bool AmdEncoder::PutFrame(ID3D11Texture2D * frame)
 	
 	FillSurfaceDX11(context, surfaceamf, frame);
 
+	//amf_int64 t_i64_force_idr = AMF_VIDEO_ENCODER_PICTURE_TYPE_IDR;
+	//t_res = m_surface_in->SetProperty(AMF_VIDEO_ENCODER_FORCE_PICTURE_TYPE, t_i64_force_idr);
 	//	Duplicate Buffer and send to encoder.
 	auto res = SendSurfaceToEncoder(surfaceamf);
 	if (!res) {

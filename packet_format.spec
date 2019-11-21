@@ -27,9 +27,9 @@ KEY COMMAND 	(36 bits)
 * VAL2[SCANCODE]		(16 bits)
 * EV1[KEY_EVENT]		(2 bits)
 
-VIDEO HEADER 	(5 bytes)
-* ACK				(16 bits)
-* FRAME				(16 bits)
-* INTRA_FRAME_SEQ 		(8 bits)
+VIDEO HEADER 	(6 bytes)
+* ACK				          (16 bits)
+* FRAME				        (16 bits)
+* INTRA_FRAME_SEQ 		(16 bits)
 
 VIDEO PAYLOAD	(1400 bytes)

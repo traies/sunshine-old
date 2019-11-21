@@ -31,6 +31,8 @@ bool NvidiaEncoder::PutFrame(IDirect3DSurface9 * frame)
 	return true;
 }
 
+int frameCount = 0;
+ID3D11Texture2D* texture;
 
 bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 {
@@ -44,14 +46,16 @@ bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 	}
 
 
-	if (queue.size() < 2) {
+	if (queue.size() < 1) {
 		frameLock.lock();
+		
+		ID3D11Device* device;
+		frame->GetDevice(&device);
+
 		ID3D11DeviceContext* context;
-		d3d11device->GetImmediateContext(&context);
-		auto surf = reinterpret_cast<ID3D11Texture2D*>(encoder->GetNextInputFrame()->inputPtr);
-		context->CopyResource(surf, frame);
+		device->GetImmediateContext(&context);
+		context->CopyResource(auxFrame, frame);
 		std::vector<std::vector<uint8_t>> buffer;
-		encoder->EncodeFrame(buffer);
 		queue.push(buffer);
 		frameLock.unlock();
 	}
@@ -60,15 +64,35 @@ bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 
 bool NvidiaEncoder::PutFrame(GLuint * texture)
 {
-	return false;
+	return false; 
 }
 
 bool NvidiaEncoder::PullBuffer(std::vector<std::vector<uint8_t>>& buffer)
 {
 	std::lock_guard<std::mutex> lock(frameLock);
 	if (!queue.empty()) {
+		frameCount++;
+		if (frameCount > 0 && frameCount % 300 == 0) {
+			NV_ENC_RECONFIGURE_PARAMS params = { NV_ENC_RECONFIGURE_PARAMS_VER };
+			memcpy(&params.reInitEncodeParams, &initializeParams, sizeof(initializeParams));
+			NV_ENC_CONFIG reInitCodecConfig = { NV_ENC_CONFIG_VER };
+			memcpy(&reInitCodecConfig, initializeParams.encodeConfig, sizeof(reInitCodecConfig));
+			params.reInitEncodeParams.encodeConfig = &reInitCodecConfig;
+			params.forceIDR = true;
+			encoder->Reconfigure(&params);
+		}
+
 		buffer = queue.front();
+		ID3D11DeviceContext* context;
+		d3d11device->GetImmediateContext(&context);
+		auto surf = reinterpret_cast<ID3D11Texture2D*>(encoder->GetNextInputFrame()->inputPtr);
+		context->CopyResource(surf, auxFrame);
+
+		//context->Flush();
+		encoder->EncodeFrame(buffer);
+
 		queue.pop();
+		//texture->;
 		return true;
 	}
 	return false;
@@ -132,18 +156,19 @@ bool NvidiaEncoder::InitEncoder(ID3D11Texture2D * frame)
 		0,
 		false);
 
-	NV_ENC_INITIALIZE_PARAMS initializeParams;
+
 	ZeroMemory(&initializeParams, sizeof(initializeParams));
 
-	NV_ENC_CONFIG encodeConfig = { NV_ENC_CONFIG_VER };
-	initializeParams.encodeConfig = &encodeConfig;
-	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID);
-	encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
+	NV_ENC_CONFIG * encodeConfig = new NV_ENC_CONFIG{ NV_ENC_CONFIG_VER };
+	initializeParams.encodeConfig = encodeConfig;
+	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+	//encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
 	//encodeConfig.rcParams.averageBitRate = (static_cast<unsigned int>(5.0f * initializeParams.encodeWidth * initializeParams.encodeHeight) / (1920 * 1080)) * 100000;
-	encodeConfig.rcParams.averageBitRate = 10000000;
-	encodeConfig.rcParams.vbvBufferSize = 0; // (encodeConfig.rcParams.averageBitRate * initializeParams.frameRateDen / initializeParams.frameRateNum) * 5;
-	encodeConfig.rcParams.maxBitRate = encodeConfig.rcParams.averageBitRate;
-	encodeConfig.rcParams.vbvInitialDelay = 0; // encodeConfig.rcParams.vbvBufferSize;
+	encodeConfig->rcParams.averageBitRate = 50000000;
+	encodeConfig->rcParams.vbvBufferSize = 0; 
+	encodeConfig->rcParams.vbvInitialDelay = 0;
+	encodeConfig->rcParams.maxBitRate = encodeConfig->rcParams.averageBitRate;
+	encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
 	try {
 		encoder->CreateEncoder(&initializeParams);
 	}
@@ -162,7 +187,7 @@ bool NvidiaEncoder::InitEncoder(ID3D11Texture2D * frame)
 	destDesc.MipLevels = destDesc.ArraySize = 1;
 	destDesc.SampleDesc.Quality = 0;
 	destDesc.SampleDesc.Count = 1;
-	destDesc.MiscFlags = 0;
+	destDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
 	auto res = d3d11device->CreateTexture2D(&destDesc, nullptr, &auxFrame);
 
