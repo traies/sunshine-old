@@ -3,14 +3,16 @@
 #include <d3d9.h>
 #include <d3d11.h>
 #include <include\core\Factory.h>
+#include "RemoteStartupInfo.h"
 
 namespace Encode {
 	class AmdEncoder : public Encoder {
 	public:
+		AmdEncoder(const RemoteProcessStartInfo& startup);
+		~AmdEncoder() {};
 		void Init(IDirect3DDevice9 * device) override;
 		void Init(ID3D11Device * device) override;
 		void Init(HDC * hdc) override;
-		~AmdEncoder() {};
 		bool PutFrame(IDirect3DSurface9 * frame) override;
 		bool PutFrame(ID3D11Texture2D * frame) override;
 		bool PutFrame(GLuint * texture) override;
@@ -27,7 +29,7 @@ namespace Encode {
 		bool encoderStarted = false;
 		ID3D11Device* device = nullptr;
 		amf::AMFSurfacePtr surfaceamf;
+		uint32_t bitrate;
 	};
-
 }
 

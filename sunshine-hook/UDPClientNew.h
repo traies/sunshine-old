@@ -11,7 +11,7 @@ public:
 	int Receive(char* buf, int len);
 
 private:
-	bool Init(const char* fromIp, const char* fromPort, const char* toIp, const char* toPort);
-	SOCKET _socket;
+	bool Init(const char* toIp, const char* toPort);
+	SOCKET _socket = 0;
 };
 

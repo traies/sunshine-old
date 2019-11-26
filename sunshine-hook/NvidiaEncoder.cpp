@@ -9,6 +9,19 @@
 #pragma comment(lib, "d3d11.lib")
 using namespace Encode;
 
+NvidiaEncoder::NvidiaEncoder(const RemoteProcessStartInfo& startup)
+{
+	this->bitrate = startup.bitrate;
+	
+	if (startup.codec == CODEC::H264) {
+		codec = NV_ENC_CODEC_H264_GUID;
+	}
+
+	if (startup.codec == CODEC::HEVC) {
+		codec = NV_ENC_CODEC_HEVC_GUID;
+	}
+};
+
 bool NvidiaEncoder::PutFrame(IDirect3DSurface9 * frame)
 {
 	if (encoder == nullptr) {
@@ -46,7 +59,7 @@ bool NvidiaEncoder::PutFrame(ID3D11Texture2D * frame)
 	}
 
 
-	if (queue.size() < 1) {
+	if (queue.size() < 2) {
 		frameLock.lock();
 		
 		ID3D11Device* device;
@@ -121,9 +134,9 @@ bool NvidiaEncoder::InitEncoder(IDirect3DSurface9 * frame)
 	
 	NV_ENC_CONFIG encodeConfig = { NV_ENC_CONFIG_VER };
 	initializeParams.encodeConfig = &encodeConfig;
-	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
-	encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
-	encodeConfig.rcParams.averageBitRate = (static_cast<unsigned int>(5.0f * initializeParams.encodeWidth * initializeParams.encodeHeight) / (1280 * 720)) * 100000;
+	encoder->CreateDefaultEncoderParams(&initializeParams, this->codec, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+	encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+	encodeConfig.rcParams.averageBitRate =this->bitrate;
 	encodeConfig.rcParams.vbvBufferSize = (encodeConfig.rcParams.averageBitRate * initializeParams.frameRateDen / initializeParams.frameRateNum) * 5;
 	encodeConfig.rcParams.maxBitRate = encodeConfig.rcParams.averageBitRate;
 	encodeConfig.rcParams.vbvInitialDelay = encodeConfig.rcParams.vbvBufferSize;
@@ -161,10 +174,9 @@ bool NvidiaEncoder::InitEncoder(ID3D11Texture2D * frame)
 
 	NV_ENC_CONFIG * encodeConfig = new NV_ENC_CONFIG{ NV_ENC_CONFIG_VER };
 	initializeParams.encodeConfig = encodeConfig;
-	encoder->CreateDefaultEncoderParams(&initializeParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
-	//encodeConfig.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
-	//encodeConfig.rcParams.averageBitRate = (static_cast<unsigned int>(5.0f * initializeParams.encodeWidth * initializeParams.encodeHeight) / (1920 * 1080)) * 100000;
-	encodeConfig->rcParams.averageBitRate = 50000000;
+
+	encoder->CreateDefaultEncoderParams(&initializeParams, this->codec, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+	encodeConfig->rcParams.averageBitRate = this->bitrate;
 	encodeConfig->rcParams.vbvBufferSize = 0; 
 	encodeConfig->rcParams.vbvInitialDelay = 0;
 	encodeConfig->rcParams.maxBitRate = encodeConfig->rcParams.averageBitRate;

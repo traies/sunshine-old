@@ -9,12 +9,14 @@
 #include <NvEncoder\NvEncoderD3D11.h>
 #include <queue>
 #include <mutex>
+#include "RemoteStartupInfo.h"
+
 
 namespace Encode {
 	class NvidiaEncoder : public Encoder
 	{
 	public:
-
+		NvidiaEncoder(const RemoteProcessStartInfo& startup);
 		void Init(IDirect3DDevice9* device) override
 		{
 			d3d9device = device;
@@ -85,6 +87,8 @@ namespace Encode {
 		ID3D11Texture2D* auxFrame = nullptr;
 		bool hasFrame = false;
 		NV_ENC_INITIALIZE_PARAMS initializeParams;
+		uint32_t bitrate = 0;
+		GUID codec;
 	};
 }
 

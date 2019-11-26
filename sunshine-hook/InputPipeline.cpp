@@ -8,14 +8,37 @@
 
 #define MAX_TRIES	100
 
+InputPipeline::InputPipeline(std::shared_ptr<UDPClientNew> endpoint) : _endpoint(endpoint)
+{
+	fhook = std::make_unique<FocusHook>();
+	auto b = fhook->Install();
+	wndProcHook = std::make_unique<WndProcHook>();
+	wndProcHook->Install();
+
+	std::thread updateWindow([&] {
+		while (true) {
+			windowsCount = GetWindowForThisProc(windows, 100);
+			if (windowsCount > 0) {
+				fhook->SetForegroundWindow(windows[0]);
+				fhook->SetActiveWindow(windows[0]);
+				fhook->SetFocusWindow(windows[0]);
+				LOG(INFO) << "Changing window...";
+				for (int i = 0; i < windowsCount; i++) {
+					wndProcHook->Install(windows[i]);
+				}
+			}
+			Sleep(10000);
+		}
+		});
+	updateWindow.detach();
+	ControlHook chook;
+	chook.Install();
+}
+
+
 void InputPipeline::Run()
 {
 	LOG(INFO) << "Run input pipeline";
-	bool iResult = _server.Init();
-	if (!iResult) {
-		LOG(ERROR) << "Input server initialization failed.";
-		return;
-	}
 	InputCommand command;
 	ZeroMemory(&command, sizeof(command));
 	while (true) {
@@ -87,5 +110,5 @@ BOOL CALLBACK InputPipeline::GetWindowCallback(HWND wnd, LPARAM currProc)
 
 int InputPipeline::NextCommand(InputCommand& nextCommand)
 {
-	return _server.Receive(reinterpret_cast<char *>(&nextCommand), sizeof(InputCommand));
+	return _endpoint->Receive(reinterpret_cast<char *>(&nextCommand), sizeof(InputCommand));
 };

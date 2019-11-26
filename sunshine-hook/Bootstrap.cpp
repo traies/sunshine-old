@@ -9,7 +9,7 @@
 #include "AmdEncoder.h"
 #include "NvidiaEncoder.h"
 #include "FocusHook.h"
-#include "Encoder.h"
+//#include "Encoder.h"
 #include "ControlHook.h"
 
 #define DEFAULT_FIFO_DEBUG	"sunshine_debug"
@@ -17,7 +17,9 @@
 std::shared_ptr<UDPClientNew> Bootstrap::InitSocket()
 {
 	LOG(INFO) << "Streaming video to " << _startupInfo->videoIP << ":" << _startupInfo->videoPort;
-	return std::make_shared<UDPClientNew>(_startupInfo->videoIP, _startupInfo->videoPort);
+	auto socket = std::make_shared<UDPClientNew>(_startupInfo->videoIP, _startupInfo->videoPort);
+
+	return socket;
 }
 
 void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
@@ -25,13 +27,13 @@ void Bootstrap::Init(REMOTE_ENTRY_INFO * info) {
 	heartbeat = std::make_shared<std::thread>(std::thread(&Bootstrap::HeartbeatSend, this, mq));
 	
 	_startupInfo= reinterpret_cast<RemoteProcessStartInfo * >(info->UserData);
-	LOG(INFO) << _startupInfo->videoIP;
-	LOG(INFO) << _startupInfo->encoderAPI;
 	socket = InitSocket();
 	//InstallHookD9();
 	InstallHookD11();
 	//InstallHookOpenGL();
-	InitInputPipeline();
+	if (!_startupInfo->noControl) {
+		InitInputPipeline();
+	}
 	return;
 }
 
@@ -55,11 +57,11 @@ void Bootstrap::InstallHookD9()
 	D9Hook * hook;
 	if (strcmp(_startupInfo->encoderAPI, "NVIDIA") == 0) {
 		LOG(INFO) << "Using NVIDIA encoder...";
-		hook = D9Hook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>());
+		hook = D9Hook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>(*_startupInfo));
 	}
 	else {
 		LOG(INFO) << "Using AMD encoder...";
-		hook = D9Hook::CreateInstance(std::make_unique<Encode::AmdEncoder>());
+		hook = D9Hook::CreateInstance(std::make_unique<Encode::AmdEncoder>(*_startupInfo));
 	}
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
@@ -75,11 +77,11 @@ void Bootstrap::InstallHookD11()
 	D11Hook * hook = nullptr;
 	if (strcmp(_startupInfo->encoderAPI, "NVIDIA") == 0) {
 		LOG(INFO) << "Setting up NVIDIA encoder for D11 hoook...";
-		hook = D11Hook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>());
+		hook = D11Hook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>(*_startupInfo));
 	}
 	else {
 		LOG(INFO) << "Setting up AMD encoder for D11 hook...";
-		hook = D11Hook::CreateInstance(std::make_unique<Encode::AmdEncoder>());
+		hook = D11Hook::CreateInstance(std::make_unique<Encode::AmdEncoder>(*_startupInfo));
 	}
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
@@ -95,11 +97,11 @@ void Bootstrap::InstallHookOpenGL()
 	auto hook = GLHook::GetInstance();
 	if (strcmp(_startupInfo->encoderAPI, "NVIDIA") == 0) {
 		LOG(INFO) << "Setting up NVIDIA encoder for GL hoook...";
-		hook = GLHook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>());
+		hook = GLHook::CreateInstance(std::make_unique<Encode::NvidiaEncoder>(*_startupInfo));
 	}
 	else {
 		LOG(INFO) << "Setting up AMD encoder for GL hook...";
-		hook = GLHook::CreateInstance(std::make_unique<Encode::AmdEncoder>());
+		hook = GLHook::CreateInstance(std::make_unique<Encode::AmdEncoder>(*_startupInfo));
 	}
 	hook->SetSocket(socket);
 	hook->SetBootstrap(heartbeat);
@@ -113,7 +115,7 @@ void Bootstrap::InstallHookOpenGL()
 std::unique_ptr<InputPipeline> Bootstrap::inputPipeline;
 void Bootstrap::InitInputPipeline()
 {
-	inputPipeline = std::make_unique<InputPipeline>();
+	inputPipeline = std::make_unique<InputPipeline>(socket);
 	std::thread thread(&InputPipeline::Run, std::ref(*inputPipeline));
 	thread.detach();
 }

@@ -9,7 +9,7 @@ UDPClientNew::UDPClientNew(const char* ip, int port)
 {
 	char portStr[100];
 	_itoa_s(port, portStr, 10);
-	Init("127.0.0.1", "2234", ip, portStr);
+	Init(ip, portStr);
 }
 
 UDPClientNew::~UDPClientNew()
@@ -17,7 +17,7 @@ UDPClientNew::~UDPClientNew()
 
 }
 
-bool UDPClientNew::Init(const char * fromIp, const char * fromPort, const char* toIp, const char* toPort)
+bool UDPClientNew::Init(const char* toIp, const char* toPort)
 {
 	WSADATA wsaData;
 
@@ -28,39 +28,32 @@ bool UDPClientNew::Init(const char * fromIp, const char * fromPort, const char* 
 		return false;
 	}
 
-	struct addrinfo* result = nullptr, * ptr = nullptr, hints;
+	_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (_socket == INVALID_SOCKET) {
+		LOG(ERROR) << "socket failed: " << WSAGetLastError();
+		WSACleanup();
+		return false;
+	}
+
+	struct sockaddr_in from = {};
+	from.sin_family = AF_INET;
+	from.sin_addr.s_addr = INADDR_ANY;
+	bind(_socket, (sockaddr*) &from, sizeof(from));
+
+	struct addrinfo* to = nullptr, hints;
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_protocol = IPPROTO_UDP;
-
-	res = getaddrinfo(fromIp, fromPort, &hints, &result);
-	if (res != 0) {
-		LOG(ERROR) << "getaddrinfo failed: " << res;
-		WSACleanup();
-		return false;
-	}
-
-	_socket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if (_socket == INVALID_SOCKET) {
-		LOG(ERROR) << "socket failed: " << WSAGetLastError();
-		freeaddrinfo(result);
-		WSACleanup();
-		return false;
-	}
-	freeaddrinfo(result);
-
-	struct addrinfo* to = nullptr;
 	res = getaddrinfo(toIp, toPort, &hints, &to);
 	if (res != 0) {
 		LOG(ERROR) << "getaddrinfo to failed: " << res;
 		WSACleanup();
 		return false;
 	}
-
+	
 	DWORD buffSize = 104857600;
 	setsockopt(_socket, SOL_SOCKET, SO_SNDBUF, (char*)&buffSize, sizeof(DWORD));
-
 	res = connect(_socket, to->ai_addr, to->ai_addrlen);
 	if (res != 0) {
 		LOG(ERROR) << "connect failed: " << WSAGetLastError();

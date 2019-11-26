@@ -9,6 +9,11 @@
 
 using namespace Encode;
 
+AmdEncoder::AmdEncoder(const RemoteProcessStartInfo& startup)
+{
+
+}
+
 bool AmdEncoder::InitContext(amf::AMFFactory ** factory)
 {
 	HMODULE hAmfDll = LoadLibrary(AMF_DLL_NAME);
@@ -201,6 +206,9 @@ bool AmdEncoder::SetEncoderProperties(UINT width, UINT height, UINT framerate, a
 	encoder->SetProperty(AMF_VIDEO_ENCODER_QUALITY_PRESET, AMF_VIDEO_ENCODER_QUALITY_PRESET_SPEED);
 	encoder->SetProperty(AMF_VIDEO_ENCODER_FRAMESIZE, AMFConstructSize(width, height));
 	encoder->SetProperty(AMF_VIDEO_ENCODER_FRAMERATE, AMFConstructRate(framerate, 1));
+	encoder->SetProperty(AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD, AMF_VIDEO_ENCODER_RATE_CONTROL_METHOD_CBR);
+	encoder->SetProperty(AMF_VIDEO_ENCODER_CAP_MAX_BITRATE, bitrate);
+	encoder->SetProperty(AMF_VIDEO_ENCODER_TARGET_BITRATE, bitrate);
 
 	auto res = encoder->Init(format, width, height);
 
