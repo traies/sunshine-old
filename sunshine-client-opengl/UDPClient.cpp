@@ -2,11 +2,9 @@
 #include "UDPClient.h"
 #include "..\easyloggingpp\easylogging++.h"
 
-UDPClient::UDPClient(const char* ip, int port)
+UDPClient::UDPClient(int port)
 {
-	char portStr[100];
-	_itoa_s(port, portStr, 10);
-	Init(ip, portStr);
+	Init(port);
 }
 
 UDPClient::~UDPClient()
@@ -14,7 +12,7 @@ UDPClient::~UDPClient()
 
 }
 
-bool UDPClient::Init(const char* ip, const char* port)
+bool UDPClient::Init(int port)
 {
 	WSADATA wsaData;
 
@@ -25,42 +23,54 @@ bool UDPClient::Init(const char* ip, const char* port)
 		return false;
 	}
 
-	struct addrinfo* ptr = nullptr, hints;
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_DGRAM;
-	hints.ai_protocol = IPPROTO_UDP;
-
-	res = getaddrinfo(ip, port, &hints, &addr);
-	if (res != 0) {
-		LOG(ERROR) << "getaddrinfo failed: " << res;
-		WSACleanup();
-		return false;
-	}
-
-	_socket = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+	_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (_socket == INVALID_SOCKET) {
 		LOG(ERROR) << "socket failed: " << WSAGetLastError();
-		freeaddrinfo(addr);
 		WSACleanup();
 		return false;
 	}
 
-	return true;
-}
+	DWORD buffSize = 11728640;
+	setsockopt(_socket, SOL_SOCKET, SO_RCVBUF, (char*)&buffSize, sizeof(DWORD));
 
-bool UDPClient::Bind()
-{
-	int iResult = bind(_socket, addr->ai_addr, addr->ai_addrlen);
-	if (iResult == SOCKET_ERROR) {
+	int enable = 1;
+	setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(enable));
+	
+	DWORD timeout = 2000;
+	setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
+
+	struct sockaddr_in from = {};
+	from.sin_addr.s_addr = INADDR_ANY;
+	from.sin_port = htons(port);
+	from.sin_family = AF_INET;
+
+	res = bind(_socket, (SOCKADDR *)&from, sizeof(from));
+	if (res == SOCKET_ERROR) {
 		LOG(ERROR) << "Bind failed with error: " << WSAGetLastError();
-		freeaddrinfo(addr);
 		closesocket(_socket);
 		WSACleanup();
 		return false;
 	}
-
 	return true;
+}
+
+bool UDPClient::Listen()
+{
+	struct sockaddr_in remoteAddr;
+	int remoteLen = sizeof(remoteAddr);
+	static char buf[1000];
+	int res = recvfrom(_socket, buf, 1000, MSG_PEEK, (SOCKADDR*) &remoteAddr, &remoteLen);
+	if (res < 0) {
+		return false;
+	}
+	else {
+		res = connect(_socket, (SOCKADDR*)&remoteAddr, remoteLen);
+		if (res != 0) {
+			LOG(ERROR) << "error while connecting...";
+			return false;
+		}
+		return true;
+	}
 }
 
 int UDPClient::Send(char* buf, int len)

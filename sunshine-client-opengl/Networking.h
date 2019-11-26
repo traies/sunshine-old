@@ -4,7 +4,7 @@
 #include <queue>
 #include <limits.h>
 
-#define MAX_VIDEO_PAYLOAD	200
+#define MAX_VIDEO_PAYLOAD	500
 #define FRAME_BUFFER_SIZE	16384
 
 enum class PacketTypes
@@ -49,6 +49,7 @@ private:
 	std::queue<uint16_t> queue;
 
 	uint16_t currFrame = 0, lastProcessedFrame = 0;
+	bool IsFrameReady(uint16_t frame);
 public:
 	bool ReadChunk(
 		const uint8_t * packet,

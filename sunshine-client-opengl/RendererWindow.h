@@ -10,6 +10,7 @@
 #include <thread>
 #include "VideoPlayer.h"
 
+
 class RendererWindow
 {
 private:
@@ -21,6 +22,7 @@ private:
 	bool vSync = false;
 	bool captureMouse = false;
 	int code = 0;
+	int port = 0;
 	//std::unique_ptr<MpvWrapper> mpv;
 	VideoPlayer player;
 
@@ -37,8 +39,8 @@ private:
 	std::queue<InputCommand> commands;
 public:
 	std::chrono::time_point<std::chrono::system_clock> lastMouseTime;
-	RendererWindow(int width, int height, const char * title, const char * ip, const char * port) :
-		width(width), height(height), title(title) 
+	RendererWindow(int width, int height, const char * title, int port) :
+		width(width), height(height), title(title), port(port)
 	{
 		//	Creating a window
 		window = glfwCreateWindow(width, height, title, nullptr, nullptr);

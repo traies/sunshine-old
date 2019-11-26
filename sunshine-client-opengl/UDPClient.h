@@ -4,16 +4,14 @@
 class UDPClient
 {
 public:
-	UDPClient(const char* ip, int port);
+	UDPClient(int port);
 	~UDPClient();
 
 	int Send(char* buf, int len);
 	int Receive(char* buf, int len);
-	bool Bind();
-
+	bool Listen();
 private:
-	bool Init(const char* ip, const char* port);
+	bool Init(int port);
 	SOCKET _socket;
-	struct addrinfo* addr;
 };
 

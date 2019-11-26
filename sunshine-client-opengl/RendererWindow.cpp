@@ -352,78 +352,88 @@ int RendererWindow::Render()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glGenTextures(1, &vTexture);
+	//glGenTextures(1, &vTexture);
 
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, vTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, vTexture);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 
 
 	GLuint ySampler = glGetUniformLocation(program, "ySampler");
 	GLuint uSampler = glGetUniformLocation(program, "uSampler");
-	GLuint vSampler = glGetUniformLocation(program, "vSampler");
+	//GLuint vSampler = glGetUniformLocation(program, "vSampler");
 
 	player.Init();
+	
+	std::thread networkThread([this, displayW, displayH] {
+		UDPClient endpoint(this->port);
+		while (!exit && !endpoint.Listen()) {
+			LOG(INFO) << "Retrying connection";
+		}
 
-	std::thread videoStreamThread([this, displayW, displayH] {
-		UDPClient client("127.0.0.1", 1234);
-		client.Bind();
-		static uint8_t buffer[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
-		uint8_t* videoFrame;
-		uint32_t videoFrameSize;
-		// As seen in https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decode_video.c
-		memset(buffer + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
-		int received;
-		VideoReader reader;
-		uint32_t payloadSize = 0;
-		while (!exit) {
-			received = client.Receive((char*) buffer, INBUF_SIZE);
-			if (received > 0) {
-				if (reader.ReadChunk(buffer, received)) {
-					if (reader.GetFrame(&videoFrame, videoFrameSize)) {
-						do {
+		if (exit) {
+			return;
+		}
+		std::thread videoThread([this, &endpoint, displayW, displayH] {
+
+			static uint8_t buffer[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+			uint8_t* videoFrame;
+			uint32_t videoFrameSize;
+			// As seen in https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decode_video.c
+			memset(buffer + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+			int received;
+			VideoReader reader;
+			uint32_t payloadSize = 0;
+			while (!exit) {
+				received = endpoint.Receive((char*)buffer, INBUF_SIZE);
+				if (received > 0) {
+					if (reader.ReadChunk(buffer, received)) {
+						while (reader.GetFrame(&videoFrame, videoFrameSize)) {
 							if (this->player.SubmitFrame(videoFrame, videoFrameSize, displayW, displayH)) {
 							}
 							else {
 								LOG(ERROR) << "Could not submit frame";
 							}
 							free(videoFrame);
-						} while (reader.GetFrame(&videoFrame, videoFrameSize));
+						}
 					}
 				}
+				else {
+					LOG(INFO) << "Not recv";
+				}
 			}
-			else {
-				LOG(INFO) << "Not recv";
-			}
-		}
 		});
 
 
-	//	Send input commands on this thread.
-	std::thread controllerThread([this] {
-		//	Start Controller UDPClient
-		TCPClient client;
-		client.Connect("127.0.0.1", "1235");
-		while (!exit) {
-			if (!commands.empty()) {
-				InputCommand command = commands.front();
-				commands.pop();
-				int sent = client.Send((char*)&command, sizeof(InputCommand));
-				if (sent > 0) {
+		//	Send input commands on this thread.
+		std::thread controllerThread([this, &endpoint] {
+			//	Start Controller UDPClient
+			while (!exit) {
+				if (!commands.empty()) {
+					InputCommand command = commands.front();
+					commands.pop();
+					int sent = endpoint.Send((char*)&command, sizeof(InputCommand));
+					if (sent > 0) {
+					}
+					else {
+						LOG(ERROR) << "STOPPED SENDING.";
+						//break;
+						Sleep(10);
+					}
 				}
 				else {
-					LOG(ERROR) << "STOPPED SENDING.";
-					break;
+					Sleep(5);
 				}
 			}
-			else {
-				Sleep(5);
-			}
-		}
 		});
+
+		controllerThread.join();
+		videoThread.join();
+	});
+	
 
 	glfwSwapInterval(vSync ? 1 : 0);
 
@@ -437,53 +447,52 @@ int RendererWindow::Render()
 	glfwSwapBuffers(window);
 	glFinish();
 
+	AVFrame* frame;
 	while (!exit && !glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
-		// Copy next frame to texture
-		AVFrame* frame;
-		if (player.NextFrame(&frame)) {
+		glUseProgram(program);
 
+		// Copy next frame to texture
+		if (player.NextFrame(&frame)) {
 			glfwMakeContextCurrent(window);
 			glfwGetFramebufferSize(window, &displayW, &displayH);
 			glViewport(0, 0, displayW, displayH);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			glUseProgram(program);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, yTexture);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[0]);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width, frame->height, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[0]);
 			glUniform1i(ySampler, 0);
-
-
+			 
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, uTexture);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[1]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width / 2, frame->height / 2, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[1]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16, frame->width/2, frame->height/4, 0, GL_RG, GL_UNSIGNED_BYTE, frame->data[1]);
 			glUniform1i(uSampler, 1);
 
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, vTexture);
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[2]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width / 2, frame->height / 2, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[2]);
-			glUniform1i(vSampler, 2);
+			//glActiveTexture(GL_TEXTURE2);
+			//glBindTexture(GL_TEXTURE_2D, vTexture);
+			//glPixelStorei(GL_UNPACK_ROW_LENGTH, frame->linesize[2]);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, frame->width / 2, frame->height / 2, 0, GL_RED, GL_UNSIGNED_BYTE, frame->data[2]);
+			//glUniform1i(vSampler, 0mo2);
 
-			av_frame_unref(frame);
- 			DrawTexturedTriangles(vertexBuffer, uvBuffer);
+			//av_frame_unref(frame);
 
+			DrawTexturedTriangles(vertexBuffer, uvBuffer);
 			glfwSwapBuffers(window);
-			glFinish();
+			//glFlush();
+			//glFinish();
 		}
 		else {
 			//Sleep(2);
 		}
 	}
 
-	controllerThread.join();
-	videoStreamThread.join();
+	networkThread.join();
 	return code;
 }
 

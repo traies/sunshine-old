@@ -22,7 +22,7 @@ private:
 	AVCodec* decoder = nullptr;
 	AVCodecContext* context = nullptr;
 	AVCodecParserContext* parser = nullptr;
-	AVFrame* frame = nullptr, * rgbFrame = nullptr;
+	AVFrame* frame = nullptr, * frame1 = nullptr, * frame2 = nullptr, * aux = nullptr;
 	AVPacket* packet = nullptr;
 	void* av_buffer;
 	SwsContext* swsContext = nullptr;

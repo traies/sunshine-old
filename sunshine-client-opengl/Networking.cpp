@@ -1,5 +1,12 @@
 #include "stdafx.h"
 #include "Networking.h"
+#include "../easyloggingpp/easylogging++.h"
+
+
+bool VideoReader::IsFrameReady(uint16_t frame)
+{
+	return frames.count(frame) > 0 && frames[frame].packetsRead == frames[frame].size;
+}
 
 bool VideoReader::ReadChunk(
 	const uint8_t * packet,
@@ -30,16 +37,16 @@ bool VideoReader::ReadChunk(
 	memcpy(frameBuffer->data + header.intraFrameSeq * MAX_VIDEO_PAYLOAD, packet, header.payloadSize);
 	frameBuffer->packetsRead += header.payloadSize;
 
-	if (frameBuffer->packetsRead == frameBuffer->size) {
+	if (IsFrameReady(header.frame)) {
 		lastProcessedFrame = max(lastProcessedFrame, header.frame);
-
-		if (header.frame - 60 > currFrame) {
-			do {
-				currFrame++;
-			} while (currFrame < lastProcessedFrame && frames.count(currFrame) == 0);
+		
+		if (header.frame - 10 > currFrame) {
+			//while (currFrame < lastProcessedFrame && !IsFrameReady(currFrame)) {
+			currFrame = lastProcessedFrame;
+			//}
+			LOG(INFO) << "Skipped frames: " << currFrame;
 		}
 	}
-
 	return true;
 }
 
@@ -52,7 +59,7 @@ bool VideoReader::GetFrame(uint8_t ** buffer, uint32_t &size)
 			*buffer = frameBuffer->data;
 			size = frameBuffer->size;
 			currFrame++;
-			//frames.erase(f);
+			frames.erase(currFrame);
 			return true;
 		}
 	}
