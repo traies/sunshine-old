@@ -1,0 +1,5 @@
+Cosas que faltan:
+- Reliability de los mensajes de Input
+- Mensaje de IDR
+- Corregir problema con AMD
+- Decoder por Software y NVIDIA
